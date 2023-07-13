@@ -32,7 +32,7 @@ $tableList = array($users, $elections, $codes);
 $createdb = mysqli_real_escape_string($mysqli, $_GET["createdb"]);
 
 
-$v = $game_db;
+$v = $polinfo_db;
 echo "cchecking for <b>".$v."</b>...<br>";
 if(!checkForDB($v)){
 	if($createdb == $game_db){
