@@ -1,4 +1,18 @@
 <?php
+//########################################################################################
+//########################################################################################
+//## Author: James Manrique                           ####################################
+//## File: basefunctions.php                          ####################################
+//## Project: POLINFO                                 ####################################
+//## License: AGPL3.0                                 ####################################
+//## GitHub: https://github.com/217coder/polinfo-crud ####################################
+//## Description: some general functions that help    ####################################
+//## with accessing info from mysqli database.        ####################################
+//## Sometimes these functions are known as CRUD,     ####################################
+//## Create, Read, Update, and Delete.                ####################################
+//########################################################################################
+//########################################################################################
+
 include("dbpassword.php");
 $dbpass = getDBPass();
 $dbhost = 'localhost';
@@ -236,33 +250,6 @@ function logout(){
 		</tr></table>';
 }*/
 
-/*function addToHref($item, $value){
-	//maybe this could be done better? idk, little goofy, but I think it works...
-	$query = $_SERVER['QUERY_STRING'];
-	$qArray = explode('&',$query);
-	$inQuery=0;
-	if($qArray[0]!=NULL){
-		for($i=0;$i<count($qArray);$i++){
-			$x = explode('=',$qArray[$i]);
-			if($x[0]==$item){
-				$x[1]=$value;
-				$inQuery=1;
-			}
-			if($i==0){
-				$final=$x[0]."=".$x[1];}
-			else{
-				$final=$final."&".$x[0]."=".$x[1];}
-		}
-	}
-	if(!$inQuery&&$item!=NULL&&$value!=NULL){
-		if($qArray[0]==NULL){
-			$final=$item."=".$value;}
-		else{
-			$final=$final."&".$item."=".$value;}
-	}
-	//$final=$_SERVER['PHP_SELF']."?".$final;
-	return $final;
-}*/
 
 ?>
 
