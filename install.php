@@ -105,39 +105,40 @@ else{
 	else{
 		if($_GET["createtables"]==1){
 			echo "creating tables...<br>";
+			$retv = mysqli_select_db($mysqli, $polinfo_db);
+			if(!mysqli_select_db($mysqli, $polinfo_db)){
+				die('could not connect: '.mysqli_error($mysqli));}
 			if(!checkForTable($polinfo_db, $users)){
 				echo "creating users table...<br>";
-				$q = "CREATE TABLE ".$users."  ('id' int(11) NOT NULL AUTO INCREMENT, 'username' varchar(50) NOT NULL UNIQUE,
- 'password' varchar(255) NO NULL, 'access-level' int(11) DEFAULT 1, PRIMARY KEY ('id'))";
+				$q = "CREATE TABLE ".$users."  (id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, username varchar(50) NOT NULL UNIQUE,
+ password varchar(255) NOT NULL, access_level int(11) DEFAULT 1)";
 				echo "q =".$q."... <br>";
-/*				if($mysqli->query($q)===TRUE){
+				if($mysqli->query($q)===TRUE){
 					echo "table created successfully!!!<br>";
 				} else{
-					echo "errrrrror creating table: ".$mysli->error;}
-*/
+					echo "errrrrror creating table: ".mysqli_error($mysqli);}
 			}
 			if(!checkForTable($polinfo_db, $codes)){
 				echo "creating codes table...<br>";
-				$q = "CREATE TABLE ".$codes."  ('id' int(11) NOT NULL AUTO INCREMENT, 'code' varchar(255) NOT NULL UNIQUE,
- 'valid' int(11) DEFAULT 1, PRIMARY KEY ('id'))";
+				$q = "CREATE TABLE ".$codes."  (id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, code varchar(255) NOT NULL UNIQUE,
+ valid int(11) DEFAULT 1)";
 				echo "q =".$q."... <br>";
-/*				if($mysqli->query($q)===TRUE){
+				if($mysqli->query($q)===TRUE){
 					echo "table created successfully!!!<br>";
 				} else{
-					echo "errrrrror creating table: ".$mysli->error;}
-*/
+					echo "errrrrror creating table: ".mysqli_error($mysqli);}
 			}
 			if(!checkForTable($polinfo_db, $elections)){
-				echo "creating items table...<br>";
-				$q = "CREATE TABLE ".$elections."  ('id' int(11) NOT NULL AUTO INCREMENT, 'db_name' varchar(50) NOT NULL UNIQUE,
- 'title' varchar(100), 'nickname' varchar(50), 'election_date' DATE, 'election_style' varchar(50), 'moreinfo' text)";
+				echo "creating elections table...<br>";
+				$q = "CREATE TABLE ".$elections."  (id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, db_name varchar(50) NOT NULL UNIQUE,
+ title varchar(100), nickname varchar(50), election_date DATE, election_style varchar(50), moreinfo text)";
 				echo "q =".$q."... <br>";
-/*				if($mysqli->query($q)===TRUE){
+				if($mysqli->query($q)===TRUE){
 					echo "table created successfully!!!<br>";
 				} else{
-					echo "errrrrror creating tabe: ".$mysli->error;}
-*/
+					echo "errrrrror creating table: ".mysqli_error($mysqli);}
 			}
+			echo '<a href="?">[RELOAD Page???]</a><br>';
 		}
 		else{
 			echo 'would you like to create missing tables? <a href="?createtables='.$missing.'">[yes]</a><br>';

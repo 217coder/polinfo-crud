@@ -30,7 +30,7 @@ function checkForTable($dbName, $dbTable){
 	$retv = mysqli_select_db($mysqli, $dbName);
 	if(!$retv){
 		die('could not connect: '.mysqli_error($mysqli)); }
-	if($mysqli->query("DESCRIBE '".$dbTable."'")){ //table DOES exist
+	if($mysqli->query("DESCRIBE ".$dbTable)){ //table DOES exist
 		return 1;}
 	else{ //table does NOT exist
 		return 0;}
