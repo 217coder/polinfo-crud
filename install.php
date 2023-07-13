@@ -10,6 +10,8 @@
 //## Project: POLINFO                                 ####################################
 //## License: AGPL3.0                                 ####################################
 //## GitHub: https://github.com/217coder/polinfo-crud ####################################
+//## Description: this file helps setup setup the     ####################################
+//## database & basic tables for POLINFO.             ####################################
 //########################################################################################
 //########################################################################################
 
@@ -117,6 +119,13 @@ else{
 					echo "<b>table created successfully!!!</b><br>";
 				} else{
 					echo "errrrrror creating table: ".mysqli_error($mysqli);}
+				echo "setting up default admin user for users table, default password is PLEASECHANGEME.<br>";
+				$q = "INSERT INTO ".$users." (username, password, access_level) VALUES ('admin', '".password_hash("PLEASECHANGEME",PASSWORD_DEFAULT)."', 999);";
+				echo "q =".$q."... <br>";
+				if($mysqli->query($q)===TRUE){
+					echo "<b>admin user created successfully!!!</b><br>";
+				} else{
+					echo "errrrrror creating admin user: ".mysqli_error($mysqli);}
 			}
 			if(!checkForTable($polinfo_db, $codes)){
 				echo "creating codes table...<br>";
@@ -145,8 +154,6 @@ else{
 		}
 	}
 }
-
-
 
 ?>
 </div>
