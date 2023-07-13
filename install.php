@@ -33,11 +33,11 @@ $createdb = mysqli_real_escape_string($mysqli, $_GET["createdb"]);
 
 
 $v = $polinfo_db;
-echo "cchecking for <b>".$v."</b>...<br>";
+echo "ccccchecking for <b>".$v."</b>...<br>";
 if(!checkForDB($v)){
-	if($createdb == $game_db){
+	if($createdb == $polinfo_db){
 		echo "db doesn't exist, and I've been told to create new db....<b>".$createdb."</b><br>";
-		$q = "CREATE DATABASE ".$game_db.";";
+		$q = "CREATE DATABASE ".$polinfo_db.";";
 		echo "q =".$q."... <br>";
 		if($mysqli->query($q)===TRUE){
 			echo "database created successfully!!!<br>";
@@ -55,7 +55,7 @@ else{
 	echo "now to check for tables...<br>";
 	$missing = 0;
 	foreach($tableList as $t){
-		if(!checkForTable($game_db, $t)){
+		if(!checkForTable($polinfo_db, $t)){
 			if(!$missing){
 				echo "one or more tables are missing...";
 				$missing = 1;
