@@ -33,14 +33,14 @@ $createdb = mysqli_real_escape_string($mysqli, $_GET["createdb"]);
 
 
 $v = $polinfo_db;
-echo "ccccchecking for <b>".$v."</b>...<br>";
+echo "checking for <b>".$v."</b>, and various other <i>things</i>...<br>";
 if(!checkForDB($v)){
 	if($createdb == $polinfo_db){
 		echo "db doesn't exist, and I've been told to create new db....<b>".$createdb."</b><br>";
 		$q = "CREATE DATABASE ".$polinfo_db.";";
 		echo "q =".$q."... <br>";
 		if($mysqli->query($q)===TRUE){
-			echo "database created successfully!!!<br>";
+			echo "<b>database created successfully!!!<b><br>";
 			echo '<a href="?">[RELOAD to Check for Tables]</a><br>';
 		} else{
 			echo "errrrrror creating database: ".$mysli->error;
@@ -67,25 +67,25 @@ else{
 	if(!$missing){
 		echo "all tables look to be here... <br>";
 
-		if($_POST["uninstall"]==1){
+		if($_GET["uninstall"]==1){
 			//delete everything
-			if($_GET["secret"]){
+			if($_POST["secret"]){
 				//confirm secret
-				if($_GET["secret"]==getSecret()){
+				if($_POST["secret"]==getSecret()){
 					//delete the whole thing
 					echo "deleting everything!!!<br>";
 					$q = "DROP DATABASE ".$polinfo_db.";";
 					echo "q: ".$q."<br>";
-/*					if($mysqli->query($q)===TRUE){
+					if($mysqli->query($q)===TRUE){
 						echo "<b>".$polinfo_db."</b> database deleted successfully!!!<br>";
+						echo '<a href="?">[RELOAD the page???]</a><br>';
 					} else{
 						echo "errrrrror deleting database: ".$mysli->error;}
-*/
 				}
 				else{
 					echo "the secret you typed is wrong, please try again... !!!THIS CAN NOT BE UNDONE!!!<br>";
 					echo "to confirm deleting EVERYTHING PERMANENTLY please type secret password<br>";
-					echo '<form action="install.php" method="get">';
+					echo '<form action="install.php?unsintall=1" method="post">';
 					echo 'secret: <input type="text" name="secret"><br>';
 					echo '<input type="submit"></form>';
 				}
@@ -93,7 +93,7 @@ else{
 			else{
 				echo "you said you want to delete everything... !!!THIS CAN NOT BE UNDONE!!!<br>";
 				echo "to confirm deleting EVERYTHING PERMANENTLY please type secret password<br>";
-				echo '<form action="install.php" method="get">';
+				echo '<form action="install.php?uninstall=1" method="post">';
 				echo 'secret: <input type="text" name="secret"><br>';
 				echo '<input type="submit"></form>';
 			}
@@ -114,7 +114,7 @@ else{
  password varchar(255) NOT NULL, access_level int(11) DEFAULT 1)";
 				echo "q =".$q."... <br>";
 				if($mysqli->query($q)===TRUE){
-					echo "table created successfully!!!<br>";
+					echo "<b>table created successfully!!!</b><br>";
 				} else{
 					echo "errrrrror creating table: ".mysqli_error($mysqli);}
 			}
@@ -124,7 +124,7 @@ else{
  valid int(11) DEFAULT 1)";
 				echo "q =".$q."... <br>";
 				if($mysqli->query($q)===TRUE){
-					echo "table created successfully!!!<br>";
+					echo "<b>table created successfully!!!</b><br>";
 				} else{
 					echo "errrrrror creating table: ".mysqli_error($mysqli);}
 			}
@@ -134,7 +134,7 @@ else{
  title varchar(100), nickname varchar(50), election_date DATE, election_style varchar(50), moreinfo text)";
 				echo "q =".$q."... <br>";
 				if($mysqli->query($q)===TRUE){
-					echo "table created successfully!!!<br>";
+					echo "<b>table created successfully!!!</b><br>";
 				} else{
 					echo "errrrrror creating table: ".mysqli_error($mysqli);}
 			}
