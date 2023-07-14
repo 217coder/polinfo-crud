@@ -17,13 +17,17 @@ include("dbpassword.php");
 $dbpass = getDBPass();
 $dbhost = 'localhost';
 $dbuser = 'root';
-
+$polinfo_db = 'polinfo_coredata_2023';
+$users = 'users';//name of table for users
 
 $mysqli = new mysqli($dbhost, $dbuser, $dbpass); //create sql connection
 if ($mysqli->connect_error) {
         die("ERRORROROR: Connect Failed ".$mysqli->connect_error);
 }
-
+$polinfo_conn = new mysqli($dbhost, $dbuser, $dbpass, $polinfo);
+if ($polinfo_conn->connect_error){
+	echo("error connecting to polinfo_db: ".$polinfo_conn->connect_error."<br>");
+}
 
 function checkForDB($dbName){
 	global $mysqli;
@@ -51,6 +55,7 @@ function checkForTable($dbName, $dbTable){
 }
 
 function registerUser($username, $hash, $salt){
+	$polinfo_conn;
 	$username = mysqli_real_escape_string($mysqli, $username);
 	$date = date( 'Y-m-d H:i:s');
 	$query = "INSERT INTO users ( username, password, salt, create_date )
@@ -59,33 +64,49 @@ function registerUser($username, $hash, $salt){
                 die('OH NOES:'.$mysqli->error);}
 }
 
-function isValueInTable($value, $column, $table){
+function isValueInTable($value, $column, $table, $db){
 	global $mysqli;
+	$db = mysqli_real_escape_string($mysqli, $db);
 	$value = mysqli_real_escape_string($mysqli, $value);
 	$column = mysqli_real_escape_string($mysqli, $column);
 	$table = mysqli_real_escape_string($mysqli, $table);
-	$query = "SELECT ".$column.
-		" FROM ".$table.
-		" WHERE ".$column."='".$value."';";
-	$result = $mysqli->query($query);
-	$result = mysqli_fetch_array($result);
-	if($result==NULL){
+
+	if(!mysqli_select_db($mysqli, $db)){
+		echo "error connecting to db: ".$db." because: ".$mysqli->error."<br>";
 		return false;
 	}
-	return true;
+	else{
+		$query = "SELECT ".$column.
+			" FROM ".$table.
+			" WHERE ".$column."='".$value."';";
+		$result = $mysqli->query($query);
+		$result = mysqli_fetch_array($result);
+		if($result==NULL){
+			return false;
+		}
+		return true;
+	}
 }
 
-function fetchRow($value, $column, $table){
+function fetchRow($value, $column, $table, $db){
 	global $mysqli;
+	$db = mysqli_real_escape_string($mysqli, $db);
 	$value = mysqli_real_escape_string($mysqli, $value);
 	$column = mysqli_real_escape_string($mysqli, $column);
 	$table = mysqli_real_escape_string($mysqli, $table);
-	$query = "SELECT *
-		FROM ".$table."
-		WHERE ".$column."='".$value."';";
-	$result = $mysqli->query($query);
-	$result = mysqli_fetch_array($result);
-	return $result;
+
+	if(!mysqli_select_db($mysqli, $db)){
+		echo "error connecting to db: ".$db." because: ".$mysqli->error."<br>";
+		return false;
+	}
+	else{
+		$query = "SELECT *
+			FROM ".$table."
+			WHERE ".$column."='".$value."';";
+		$result = $mysqli->query($query);
+		$result = mysqli_fetch_array($result);
+		return $result;
+	}
 }
 
 function updateField($table, $field, $data, $column, $id){
@@ -112,19 +133,6 @@ function deleteRow($id, $table){
 		" WHERE id='".$id."';";
 	if(!$mysqli->query($query)){
                 die('OH NOES:'.$mysqli->error);}
-}
-
-
-function loginUser($username, $password){
-	if(isValueInTable($username, "username", "users")){//username matches
-		$data = fetchRow($username, "username", "users"); //value, column, table
-		$hash = hash('sha256', $data['salt'].hash('sha256',$password));
-		if($hash == $data['password']){//password matches
-			validateUser($data);
-			header('Location: main.php');
-		}
-	}
-	echo "username or password did not match";
 }
 
 function isCodeValid($code){
@@ -209,8 +217,8 @@ function validateUser($data){
 
 	$date = date( 'Y-m-d H:i:s');
 	$ip = $_SERVER[HTTP_CLIENT_IP];
-	updateField("users", "last_login", $date, "id", $data[id]);
-	updateField("users", "last_ip_used", $ip, "id", $data[id]);
+//	updateField("users", "last_login", $date, "id", $data[id]);
+//	updateField("users", "last_ip_used", $ip, "id", $data[id]);
 }
 
 
@@ -237,6 +245,21 @@ function bounceAdmin(){
 function logout(){
 	$_SESSION = array();
 	session_destroy();
+}
+
+function loginUser($username, $password){
+	global $mysqli;
+	global $polinfo_db;
+	global $users;
+	if(isValueInTable($username, "username", $users, $polinfo_db)){//username matches
+		$data = fetchRow($username, "username", $users, $polinfo_db); //value, column, table
+		if(password_verify($password, $data['password'])){//password matches
+			validateUser($data);
+			header('Location: main.php');
+		}
+	}
+	echo "Username or password did not match<br>";
+
 }
 
 /*function printNavBar(){

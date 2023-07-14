@@ -26,7 +26,7 @@ session_start();?>
 <?php
 
 //list of configurable variables
-$polinfo_db = "polinfo_coredata_2023";
+//$polinfo_db = "polinfo_coredata_2023";
 $users = "users";
 $elections = "elections";
 $codes = "codes";

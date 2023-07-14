@@ -1,0 +1,32 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<?php
+//########################################################################################
+//########################################################################################
+//## Author: James Manrique                           ####################################
+//## File: dashboard.php                              ####################################
+//## Project: POLINFO                                 ####################################
+//## License: AGPL3.0                                 ####################################
+//## GitHub: https://github.com/217coder/polinfo-crud ####################################
+//## Description: This is the admin/staff dashbaord   ####################################
+//## for the POLINFO backend. Sorta falls under CRUD, ####################################
+//## Create, Read, Update, & Delete - but this also   ####################################
+//## does functions specific to the POLINFO project.  ####################################
+//########################################################################################
+//########################################################################################
+include("basefunctions.php");
+session_start();?>
+<link rel="stylesheet" type="text/css" href="game.css"/>
+<title>The GAME</title>
+</head>
+<body>
+<div class="center">
+<?php
+bounce(); //confirm if logged in
+echo "welcome to the DashBoard<br>";
+?>
+</div>
+</body>
+</html>
