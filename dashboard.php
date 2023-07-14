@@ -17,6 +17,7 @@
 //########################################################################################
 //########################################################################################
 include("basefunctions.php");
+include("dashboard_functions.php");
 session_start();?>
 <link rel="stylesheet" type="text/css" href="game.css"/>
 <title>The GAME</title>
@@ -26,6 +27,10 @@ session_start();?>
 <?php
 bounce(); //confirm if logged in
 echo "welcome to the DashBoard<br>";
+$a = $_GET["action"];
+printDashboardOptions($a);
+handleAction($a);
+echo "<br>footer";
 ?>
 </div>
 </body>
