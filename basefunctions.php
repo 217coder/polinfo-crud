@@ -255,7 +255,7 @@ function loginUser($username, $password){
 		$data = fetchRow($username, "username", $users, $polinfo_db); //value, column, table
 		if(password_verify($password, $data['password'])){//password matches
 			validateUser($data);
-			header('Location: main.php');
+			header('Location: dashboard.php');
 		}
 	}
 	echo "Username or password did not match<br>";
