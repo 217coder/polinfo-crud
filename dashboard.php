@@ -16,7 +16,7 @@
 //## does functions specific to the POLINFO project.  ####################################
 //########################################################################################
 //########################################################################################
-include("basefunctions.php");
+//include("basefunctions.php");
 include("dashboard_functions.php");
 session_start();?>
 <link rel="stylesheet" type="text/css" href="game.css"/>
@@ -30,7 +30,7 @@ echo "welcome to the DashBoard<br>";
 $a = $_GET["action"];
 printDashboardOptions($a);
 handleAction($a);
-echo "<br>footer";
+echo "<br>testfooter";
 ?>
 </div>
 </body>

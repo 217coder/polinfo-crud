@@ -245,6 +245,7 @@ function bounceAdmin(){
 function logout(){
 	$_SESSION = array();
 	session_destroy();
+	header('Location: login.php');
 }
 
 function loginUser($username, $password){
@@ -259,6 +260,42 @@ function loginUser($username, $password){
 		}
 	}
 	echo "Username or password did not match<br>";
+
+}
+
+function updatePassword($currentpw, $newpw, $confirmpw){
+	global $mysqli;
+	global $polinfo_db;
+	global $users;
+	$userid = $_SESSION["userid"];
+
+	if(!$currentpw){
+		return false;
+	}
+
+	$data = fetchRow($userid, "id", $users, $polinfo_db);
+
+	if(!password_verify($currentpw, $data['password'])){
+		echo "password entered doesn't match current password.<br>";
+		return false;
+	}
+	else{
+		if(! ($newpw === $confirmpw)){
+			echo "new password doesn't match confirm password<br>";
+			return false;
+		}
+		else{
+			echo "everything looks to be in order, updating password...<br>";
+			$newpw = mysqli_real_escape_string($mysqli, $newpw);//no inject plz
+			mysqli_select_db($mysqli, $polinfo_db);
+			$hashedpw = password_hash($newpw, PASSWORD_DEFAULT);
+			$q = "UPDATE ".$users." SET password='".$hashedpw."' WHERE id='".$userid."';";
+			if(!$mysqli->query($q)){
+        		        die('OH NOES:'.$mysqli->error);}
+			echo "<b>I think it worked...</b><br>";
+			return true;
+		}
+	}
 
 }
 

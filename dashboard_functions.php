@@ -1,5 +1,5 @@
 <?php
-//include("basefunctions.php");
+include("basefunctions.php");
 $actionList = array("Logout", "ChangePassword", "CreateElection", "ManageElections", "GenerateRegistrationCode");
 
 function printDashboardOptions($currentAction){
@@ -18,10 +18,10 @@ function printDashboardOptions($currentAction){
 function handleAction($currentAction){
 	switch($currentAction){
 		case "Logout":
-			echo "Logout code";
+			logout();
 			break;
 		case "ChangePassword":
-			echo "Change Password code";
+			updatePasswordForm();
 			break;
 		case "CreateElection":
 			echo "Create Election code";
@@ -36,5 +36,23 @@ function handleAction($currentAction){
 			echo "Please make a selection...";
 	}
 
+}
+
+function updatePasswordForm(){
+	$currentPW = $_POST["currentpw"];
+	$newPW = $_POST["newpw"];
+	$confirmPW = $_POST["confirmnewpw"];
+
+	if(!updatePassword($currentPW, $newPW, $confirmPW)){
+		echo "<br>";
+		echo '<form action="?action=ChangePassword" method="post">';
+		echo 'Current Password<input type="text" name="currentpw">';
+		echo 'New Password<input type="text" name="newpw">';
+		echo 'Confirm New Password<input type="text" name="confirmnewpw">';
+		echo '<input type="submit"></form>';
+	}
+	else{
+		echo "everything worked?...<br>";
+	}
 }
 ?>
