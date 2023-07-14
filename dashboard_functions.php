@@ -1,6 +1,6 @@
 <?php
 include("basefunctions.php");
-$actionList = array("Logout", "ChangePassword", "CreateElection", "ManageElections", "GenerateRegistrationCode");
+$actionList = array("Logout", "ChangePassword", "CreateElection", "ManageElections", "GenerateRegistrationCode", "UserList", "CodeList");
 
 function printDashboardOptions($currentAction){
 	global $actionList;
@@ -30,7 +30,15 @@ function handleAction($currentAction){
 			echo "Manage Elections code";
 			break;
 		case "GenerateRegistrationCode":
-			echo "Generate Registration CODE code";
+			$c = generateCode();
+			echo "Generated code: ".$c."<br>";
+			echo "use it wisely<br>";
+			break;
+		case "UserList":
+			echo "put code here to print out a users list<br>";
+			break;
+		case "CodeList":
+			echo "put code here to print out a code list<br>";
 			break;
 		default:
 			echo "Please make a selection...";
@@ -43,6 +51,7 @@ function updatePasswordForm(){
 	$newPW = $_POST["newpw"];
 	$confirmPW = $_POST["confirmnewpw"];
 
+	echo "New password needs to be more than 6 characters and less than 50 characters.<br>";
 	if(!updatePassword($currentPW, $newPW, $confirmPW)){
 		echo "<br>";
 		echo '<form action="?action=ChangePassword" method="post">';

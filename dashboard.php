@@ -29,6 +29,7 @@ bounce(); //confirm if logged in
 echo "welcome to the DashBoard<br>";
 $a = $_GET["action"];
 printDashboardOptions($a);
+echo "output & debug info:<br>";
 handleAction($a);
 echo "<br>testfooter";
 ?>

@@ -19,6 +19,7 @@ $dbhost = 'localhost';
 $dbuser = 'root';
 $polinfo_db = 'polinfo_coredata_2023';
 $users = 'users';//name of table for users
+$codes = 'codes';//name of table for codes
 
 $mysqli = new mysqli($dbhost, $dbuser, $dbpass); //create sql connection
 if ($mysqli->connect_error) {
@@ -54,12 +55,18 @@ function checkForTable($dbName, $dbTable){
 		return 0;}
 }
 
-function registerUser($username, $hash, $salt){
+function registerUser($username, $password, $code){
 	$polinfo_conn;
-	$username = mysqli_real_escape_string($mysqli, $username);
+	$username = mysqli_real_escape_string($polinfo_conn, $username);
+	$password = mysqli_real_escape_string($polinfo_conn, $password);
+	$code = mysqli_real_escape_string($polinfo_conn, $code);
+
 	$date = date( 'Y-m-d H:i:s');
-	$query = "INSERT INTO users ( username, password, salt, create_date )
-		VALUES ( '$username','$hash','$salt','$date' );";
+
+	$hashed = password_hash($password, PASSWORD_DEFAULT);
+	$query = "INSERT INTO users ( username, password, access_level )
+		VALUES ( '$username','$hashed', 1 );";
+
 	if(!$mysqli->query($query)){
                 die('OH NOES:'.$mysqli->error);}
 }
@@ -136,25 +143,43 @@ function deleteRow($id, $table){
 }
 
 function isCodeValid($code){
-	$code = mysqli_real_escape_string($mysqli, $code);
-	$data = fetchRow($code, "code", "codes"); //value, column, table
-	if($data['valid']){ //magic number/field that is set in the sql database to say if this invite code has been used in the past.
-		mysql_query("UPDATE codes SET valid='0'
-			WHERE code='$code';");
+	global $mysqli;
+	global $polinfo_db;
+	global $codes;
+	$code = mysqli_real_escape_string($mysqli, $codes);
+	$data = fetchRow($code, "code", $codes, $polinfo_db); //value, column, table
+	if($data['valid']){ //number/field that is set in the sql database to say if this invite code has been used in the past.
+		$q = "UPDATE codes SET valid='0' WHERE code='".$code."'";
+		if($mysqli->query($q)){
+			die("There was an error running the query for the code:".$mysqli->error);
+		}
 		return true;
 	}
 	return false;
 }
 
-function isUsernameTake($name){
-	return isValueInTable($name, "username", "users"); //value, column, table
+function isUsernameTaken($name){
+	global $mysqli;
+	global $polinfo_db;
+	global $users;
+	return isValueInTable($name, "username", $users, $polinfo_db); //value, column, table
 }
 
 
 function generateCode(){
+	global $mysqli;
+	global $polinfo_db;
+	global $codes;
 	$code = rand(10000000,99999999);
-	$mysql->query("INSERT INTO codes (code) VALUES ('".$code."');");
-	//does 'valid' need to be set to 1?
+
+	mysqli_select_db($mysqli, $polinfo_db);
+	$q = "INSERT INTO codes (code) VALUES ('".$code."');";
+	echo "q: ".$q." -<br>";
+	if(!$mysqli->query($q)){
+		die("there was an error inserting the code into the db:".$mysqli->error);
+	}
+	//does 'valid' need to be set to 1? (currently defaults to 1, 7/14/23)
+	return $code;
 }
 
 function printTable($query, $header){
@@ -272,6 +297,12 @@ function updatePassword($currentpw, $newpw, $confirmpw){
 	if(!$currentpw){
 		return false;
 	}
+	else if(!checkPasswordStrength($newpw)){
+		return false;
+	}
+	else{
+		echo "password looks strong engough...<br>";
+	}
 
 	$data = fetchRow($userid, "id", $users, $polinfo_db);
 
@@ -285,7 +316,7 @@ function updatePassword($currentpw, $newpw, $confirmpw){
 			return false;
 		}
 		else{
-			echo "everything looks to be in order, updating password...<br>";
+			echo "everything else looks to be in order, updating password...<br>";
 			$newpw = mysqli_real_escape_string($mysqli, $newpw);//no inject plz
 			mysqli_select_db($mysqli, $polinfo_db);
 			$hashedpw = password_hash($newpw, PASSWORD_DEFAULT);
@@ -299,6 +330,17 @@ function updatePassword($currentpw, $newpw, $confirmpw){
 
 }
 
+function checkPasswordStrength($password){
+	if(strlen($password)<6){
+		echo "password is too short, please use at least 6 characters<br>";
+		return 0;
+	} else if(strlen($password)>50){
+		echo "password is too long, please use less than 50 characters<br>";
+		return 0;
+	} else {
+		return 1;
+	}
+}
 /*function printNavBar(){
 	echo '<table>
 		<th><a href="myaccount.php">'.$_SESSION["username"].'</a></th>

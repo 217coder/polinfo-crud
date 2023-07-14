@@ -17,23 +17,20 @@ session_start();?>
 	$pass1 = $_POST['pass1'];
 	$pass2 = $_POST['pass2'];
 	if($code!=NULL){
-		if($pass1!=$pass2){
+		if(isUsernameTaken($username)){
+			echo "your username has been taken already";}
+		else if($pass1!=$pass2){
 			echo "error: passwords don't match";}
 		else if(strlen($username)>30){
 			echo "error: username too long";}
 		else if(strlen($username)<4){
 			echo "error: username too short";}
-		else if(strlen($pass1)<4){
-			echo "error: password too short";}
+		else if(!checkPasswordStrength($pass1)){
+			echo "error: password strength issue";}
 		else if(!isCodeValid($code)){
-			echo "your code doesn't work";}/*
-		else if(isUsernameTaken($username)){
-			echo "your name has been taken already";}*/
+			echo "your code doesn't work";}
 		else{
-			$hash=hash('sha256',$pass1);
-			$salt=createSalt();
-			$hash=hash('sha256',$salt.$hash);
-			registerUser($username, $hash, $salt);
+			registerUser($username, $password, $code);
 			header('Location: login.php');
 		}
 	}
@@ -42,8 +39,8 @@ session_start();?>
 		<table>
 		<tr><td>USERNAME:</td><td> <input type="text" name="username" maxlength="30"/></td></tr>
 		<tr><td>PASSWORD:</td> <td><input type="password" name="pass1" /></td></tr>
-		<tr><td>AGAIN:</td><td> <input type="password" name="pass2" /></td></td>
-		<tr><td>CODE:</td> <td><input type="text" name="code" /></td></tr>
+		<tr><td>CONFIRM PASSWORD:</td><td> <input type="password" name="pass2" /></td></td>
+		<tr><td>SIGNUP CODE:</td> <td><input type="text" name="code" /></td></tr>
 		<tr><td></td><td><input type="submit" value="REGISTER" /></td></tr>
 		</form>
 		</div>';
