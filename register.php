@@ -30,7 +30,9 @@ session_start();?>
 		else if(!isCodeValid($code)){
 			echo "your code doesn't work";}
 		else{
-			registerUser($username, $password, $code);
+			echo "looks like everything is in order... attempting to register...<br>";
+			registerUser($username, $pass1, $code);
+			echo "user registered???<br>";
 			header('Location: login.php');
 		}
 	}

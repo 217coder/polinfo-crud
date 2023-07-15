@@ -56,19 +56,24 @@ function checkForTable($dbName, $dbTable){
 }
 
 function registerUser($username, $password, $code){
-	$polinfo_conn;
-	$username = mysqli_real_escape_string($polinfo_conn, $username);
-	$password = mysqli_real_escape_string($polinfo_conn, $password);
-	$code = mysqli_real_escape_string($polinfo_conn, $code);
+	global $mysqli;
+	global $polinfo_db;
+	global $users;
+
+	$username = mysqli_real_escape_string($mysqli, $username);
+	$password = mysqli_real_escape_string($mysqli, $password);
+	$code = mysqli_real_escape_string($mysqli, $code);
 
 	$date = date( 'Y-m-d H:i:s');
 
 	$hashed = password_hash($password, PASSWORD_DEFAULT);
-	$query = "INSERT INTO users ( username, password, access_level )
-		VALUES ( '$username','$hashed', 1 );";
-
+	$query = "INSERT INTO ".$users." ( username, password, access_level )
+		VALUES ( '".$username."','".$hashed."', 1 );";
+	echo "q: ".$query." <br>";
+	mysqli_select_db($mysqli, $polinfo_db);
 	if(!$mysqli->query($query)){
-                die('OH NOES:'.$mysqli->error);}
+		die("There was an error running the query to create the new user:".$mysqli->error);
+	}
 }
 
 function isValueInTable($value, $column, $table, $db){
@@ -142,15 +147,15 @@ function deleteRow($id, $table){
                 die('OH NOES:'.$mysqli->error);}
 }
 
-function isCodeValid($code){
+function isCodeValid($mycode){
 	global $mysqli;
 	global $polinfo_db;
 	global $codes;
-	$code = mysqli_real_escape_string($mysqli, $codes);
-	$data = fetchRow($code, "code", $codes, $polinfo_db); //value, column, table
+	$code = mysqli_real_escape_string($mysqli, $mycode);
+	$data = fetchRow($mycode, "code", $codes, $polinfo_db); //value, column, table
 	if($data['valid']){ //number/field that is set in the sql database to say if this invite code has been used in the past.
-		$q = "UPDATE codes SET valid='0' WHERE code='".$code."'";
-		if($mysqli->query($q)){
+		$q = "UPDATE ".$codes." SET valid='0' WHERE code='".$mycode."';";
+		if(!$mysqli->query($q)){
 			die("There was an error running the query for the code:".$mysqli->error);
 		}
 		return true;
@@ -173,13 +178,20 @@ function generateCode(){
 	$code = rand(10000000,99999999);
 
 	mysqli_select_db($mysqli, $polinfo_db);
-	$q = "INSERT INTO codes (code) VALUES ('".$code."');";
-	echo "q: ".$q." -<br>";
-	if(!$mysqli->query($q)){
-		die("there was an error inserting the code into the db:".$mysqli->error);
+
+	if(isValueInTable($code, "code", $codes, $polinfo_db)){
+		echo "code has already been generated... please try again...<br>";
+		return "try again";
 	}
-	//does 'valid' need to be set to 1? (currently defaults to 1, 7/14/23)
-	return $code;
+	else{
+		$q = "INSERT INTO codes (code) VALUES ('".$code."');";
+		echo "q: ".$q." -<br>";
+		if(!$mysqli->query($q)){
+			die("there was an error inserting the code into the db:".$mysqli->error);
+		}
+		//does 'valid' need to be set to 1? (currently defaults to 1, 7/14/23)
+		return $code;
+	}
 }
 
 function printTable($query, $header){
