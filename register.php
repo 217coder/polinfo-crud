@@ -33,7 +33,8 @@ session_start();?>
 			echo "looks like everything is in order... attempting to register...<br>";
 			registerUser($username, $pass1, $code);
 			echo "user registered???<br>";
-			header('Location: login.php');
+			echo '<a href="login.php">[Go To LOGIN Page]</a><br>';
+			//header('Location: login.php');
 		}
 	}
 	echo '<form name="register" action="register.php" method="post">

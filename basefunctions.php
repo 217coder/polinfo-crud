@@ -59,6 +59,7 @@ function registerUser($username, $password, $code){
 	global $mysqli;
 	global $polinfo_db;
 	global $users;
+	global $codes;
 
 	$username = mysqli_real_escape_string($mysqli, $username);
 	$password = mysqli_real_escape_string($mysqli, $password);
@@ -69,11 +70,24 @@ function registerUser($username, $password, $code){
 	$hashed = password_hash($password, PASSWORD_DEFAULT);
 	$query = "INSERT INTO ".$users." ( username, password, access_level )
 		VALUES ( '".$username."','".$hashed."', 1 );";
-	echo "q: ".$query." <br>";
 	mysqli_select_db($mysqli, $polinfo_db);
 	if(!$mysqli->query($query)){
 		die("There was an error running the query to create the new user:".$mysqli->error);
 	}
+	else{
+		echo "<b>User Registration was a success!!</b><br>";
+	}
+	//invalidate code
+	$q = "UPDATE ".$codes." SET valid='0' WHERE code='".$code."';";
+	if(isCodeValid($code)){
+		if(!$mysqli->query($q)){
+			die("There was an error running the query to invalidate the code:".$mysqli->error);
+		}
+	}
+	else{
+		echo "the code has successfully been used & invalidated.<br>";
+	}
+
 }
 
 function isValueInTable($value, $column, $table, $db){
@@ -154,10 +168,6 @@ function isCodeValid($mycode){
 	$code = mysqli_real_escape_string($mysqli, $mycode);
 	$data = fetchRow($mycode, "code", $codes, $polinfo_db); //value, column, table
 	if($data['valid']){ //number/field that is set in the sql database to say if this invite code has been used in the past.
-		$q = "UPDATE ".$codes." SET valid='0' WHERE code='".$mycode."';";
-		if(!$mysqli->query($q)){
-			die("There was an error running the query for the code:".$mysqli->error);
-		}
 		return true;
 	}
 	return false;
