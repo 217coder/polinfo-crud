@@ -31,6 +31,20 @@ if ($polinfo_conn->connect_error){
 	echo("error connecting to polinfo_db: ".$polinfo_conn->connect_error."<br>");
 }
 
+$fields = array("racekey", "link_type", "link_source", "link_icon", "link_address");
+$test_fields = array();
+$candidateDefaultFields =  array("name","party","phone","email","website","twitter","facebook","instagram","race_key","photo");
+
+//the $tables we want to be able to switch between - THESE ARE ENTERED BY HAND
+//"basicinfo" is obsolete at the moment
+//$table_set = array("basicinfo","candidates","contests","externallinks");
+$table_set = array("candidates","contests","externallinks");
+
+$defaultLevel = "county";
+$defaultCountywide = "0";
+$defaultSeats = "1";
+
+
 function checkForDB($dbName){
 	global $mysqli;
 	$dbName = mysqli_real_escape_string($mysqli, $dbName); //no inject plz
@@ -79,6 +93,72 @@ function printDBTable($db, $table, $tableFields){
 			die('there was an error with printing table...:'.$mysqli->error);
 		}
 	}
+}
+
+function buildSuperFields($table, $dbname){
+//=============================================================
+//This function helps build an array of (data type, field name)
+//Makes it easier for the new/update entry form for datatype validation to avoid sql errors
+//this returns the results it found from the $table you give it.
+//=============================================================
+        global $mysqli;
+        global $test_fields;
+        $newFieldList = array();
+
+	$table = mysqli_real_escape_string($mysqli, $table);
+	$dbname = mysqli_escape_string($mysqli, $dbname);
+
+
+        $q = "SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '".$dbName."' AND TABLE_NAME = '".$table."'";
+//      echo "q:".$q."-<br>";
+        $query = $mysqli->query($q);
+
+
+        while($row = $query->fetch_assoc()){
+                if($row['COLUMN_NAME']!="id"){ //we don't need the ID for a table field. We'll get that in the other functions
+                        $result[]=$row;
+                }
+                else {
+                        //nothing
+                }
+        }
+
+        return $result;
+}
+function buildSuperFieldsFromList($table, $list, $dbname){
+//----------------------------------------------
+//give it a $list of table fields, see if they
+//are in our $table, if so, put them into a new
+//$superList with data types and names, this
+//way our add new entry screen will have the
+//names and data types it needs to know about.
+//This returns the $fields that it found
+//----------------------------------------------
+
+        global $mysqli;
+        global $test_fields;
+	$table = mysqli_real_escape_string($mysqli, $table);
+	$dbname = mysqli_escape_string($mysqli, $dbname);
+
+        $newFieldList = array();
+
+        $q = "SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '".$dbName."' AND TABLE_NAME = '".$table."'";
+//      echo "q:".$q."-<br>";
+        $query = $mysqli->query($q);
+
+
+        while($row = $query->fetch_assoc()){
+                if($row['COLUMN_NAME']!="id"){ //we don't need the ID for a table field. We'll get that in the other functions
+                        if(in_array($row['COLUMN_NAME'],$list)){ //and we want to make sure it's in our $list
+                                $result[]=$row; }
+                }
+                else {
+                        //nothing
+                }
+        }
+
+
+        return $result;
 }
 
 function buildFields($table, $db){
@@ -153,6 +233,176 @@ function printRow($row, $i, $tableFields){
 
         echo "</tr>"; //and the rest
 }
+function printNewEditForm($id,$table,$tableFields, $dbname){
+        global $mysqli;
+        global $fields; //call global
+        $cleanID = mysqli_real_escape_string($mysqli, $id);
+	$table = mysqli_real_escape_string($mysqli, $table);
+	$dbname = mysqli_escape_string($mysqli, $dbname);
+
+        $q="SELECT * FROM ".$table." WHERE id=".$cleanID.";";
+        echo 'q: '.$q.'<br><br>';
+
+        $politician = $mysqli->query($q);
+        $pTotal = $politician->num_rows;
+
+        $superFields = buildSuperFields($table);
+        $qnaFields = array("q1","q2","q3","q4","a1","a2","a3","a4");
+        if($pTotal){
+                $pRow = mysqli_fetch_array($politician);
+
+                echo '<table>';
+                echo "<form action=\"?update=".$cleanID."\" method=\"post\">";
+
+                $c = count($superFields);
+                for($j=0;$j<$c;$j++){ //print each field as an editable form option
+                        $v = strtolower($superFields[$j]['COLUMN_NAME']);
+                        $datatype = strtolower($superFields[$j]['DATA_TYPE']);
+                        if(in_array($v, $qnaFields)){
+                                echo '<tr><td>'.$v.'</td><td>'.$datatype.'</td><td><textarea name="'.$v.'" cols="80" rows="8">'.$pRow[$v].'</textarea></td></tr>';
+                        }
+                        else{
+                                echo '<tr><td>'.$v.'</td><td>'.$datatype.'</td><td><textarea name="'.$v.'" cols="80" rows="1">'.$pRow[$v].'</textarea></td></tr>';
+                        }
+                }
+
+                echo "<input type=\"submit\" value=\"update\"></form>
+                        <br></table>"; //and the rest of the form
+        }
+}
+//form for adding a new entry
+function printEntryForm($superFields){
+        global $fields; //call in global
+        global $defaultLevel, $defaultCountywide, $defaultSeats;
+        global $candidateDefaultFields;
+
+        echo "Start of New Entry Form<br>";
+
+        echo "<div class=\"search\">
+        <form action=\"\" method=\"post\">
+        <table>"; //start building entry form
+        echo '<tr><td>Confirmation Code</td><td>varchar</td><td><textarea name="confirm_add" cols="80" rows="1"></textarea></td</tr>';
+
+        $c = count($superFields); //print all the $fields
+        for($i=0;$i<$c;$i++){
+                $v = strtolower($superFields[$i]['COLUMN_NAME']);
+                $datatype = strtolower($superFields[$i]['DATA_TYPE']);
+                /////////////////////////////////////////////////
+                ///////----really ugly manual defaults-----//////
+                /////////////////////////////////////////////////
+                if($v!="id"){
+                        echo '<tr><td>'.$v.'</td><td>'.$datatype.'</td><td><textarea name="'.$v.'" cols="80" rows="1">';
+                        if($v=="level"){
+                                echo $defaultLevel;
+                        }
+                        else if($v=="countywide"){
+                                echo $defaultCountywide;
+                        }
+                        else if($v=="seats_available"){
+                                echo $defaultSeats;
+                        }
+                        echo '</textarea></td></tr>';
+                }
+        }
+        //finish form
+        echo "<tr><td></td><td></td><td><input type=\"submit\" value=\"Add!\"></td></tr>
+        </table>
+        </form>
+        </div>";
+}
+//add entry (from form) into database
+function addEntry($table, $tableFields){
+        global $fields, $db_table, $mysqli; //pull in globals
+
+        $query = "INSERT INTO ".$table." (";//start query
+
+        $c = count($tableFields);
+        for($i=0;$i<$c;$i++){ //read in fields to update
+                $f = $tableFields[$i];
+                $query = $query.$f;
+                if($i!=$c-1) //dont add a comma on the last one
+                        $query = $query.", ";
+        }
+        $query = $query.") VALUES ("; //half-way done
+        for($i=0;$i<$c;$i++){ //read in fields & values to update
+                $f = $tableFields[$i];
+                $v = mysqli_real_escape_string($mysqli, $_POST[$f]); //no inject pls
+
+                if($v==NULL){ //NULL values create problems if they aren't handled right.
+                        echo "f-".$f."-v is BNULnul.";
+                        $query = $query."NULL";}
+                else{
+                        $query = $query."'".$v."'"; }
+
+                if($i!=$c-1) //dont add a comma on the last one
+                        $query = $query.", ";
+        }
+        $query = $query.");";//cap it off
+        echo "q-".$query."-q";//print for fun
+
+        if(!$mysqli->query($query)){//insert and test for error
+                echo "there was a VERY critical error...".mysqli_error();
+        }
+
+}
+//UpdateEntry, almost a copy of addEntry
+function updateEntry($id, $table, $tablefields){
+        global $fields, $db_table, $key, $mysqli; //pull in globals
+
+        $query = "UPDATE ".$table." SET ";//start query
+
+        $c = count($tablefields);
+        for($i=0;$i<$c;$i++){ //read in fields & values to update
+                $f = strtolower($tablefields[$i]);
+                $v = mysqli_real_escape_string($mysqli, $_POST[$f]); //no inject pls
+
+                if($v==NULL){ //NULL values create problems if they aren't handled right.
+                        echo "v is nul.";
+                        $query = $query.$f."=NULL";}
+                else{
+                        $query = $query.$f."='".$v."'"; }
+
+                if($i!=$c-1) //dont add a comma on the last one
+                        $query = $query.", ";
+        }
+        $query = $query." WHERE id=".$id.";";//cap off the $query
+
+        echo "q-".$query."-q";//print for fun
+
+        if(!$mysqli->query($query)){//insert and test for error
+                echo "there was a VERY critical error..".mysqli_error($mysqli).".";
+        }
+}
+//delete entry
+function deleteEntry($id, $table){
+        global $mysqli, $db_table, $key; //call globals
+        $v = mysqli_real_escape_string($mysqli, $id);//no injects plz
+        $t = mysqli_real_escape_string($mysqli, $table);//no injects plz
+        $query ="DELETE FROM ".$t." WHERE id=".$v.";";//build $query
+
+        echo "executing ".$query."...<br><br>";
+
+        if(!$mysqli->query($query)){//test query for error
+                echo "OH no... there was an error-".mysqli_error($mysqli).".";
+        }
+        echo "Success?!<br><br>";
+}
+
+//first, double check that they want to delete the item
+function areYouSure($id, $table){
+        global $mysqli; //call globals
+        $v = mysqli_real_escape_string($mysqli, $id); //no injects plz
+        $t = mysqli_real_escape_string($mysqli, $table);//no injects plz
+
+        $query ="DELETE FROM ".$t." WHERE id=".$v.";";//build $query
+        echo $query."<br>";//echo it, with a line break
+
+        echo "<br><br>Are you sure you want to delete with this command??";
+
+        echo "<a href=\"".$_SERVER[PHP_SELF]."?a=list\">No</a>
+        <a href=\"".$_SERVER[PHP_SELF]."?a=delete&item=".$v."\">Yes</a>";
+}
+
 
 function registerUser($username, $password, $code){
 	global $mysqli;

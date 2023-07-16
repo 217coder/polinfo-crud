@@ -31,7 +31,7 @@ $a = $_GET["action"];
 printDashboardOptions($a);
 echo "<u>output & debug info:</U><br>";
 handleAction($a);
-echo "<br>testfooter";
+echo "<br>test footer";
 ?>
 </div>
 </body>
