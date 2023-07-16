@@ -61,7 +61,6 @@ function printDBTable($db, $table, $tableFields){
 	$db = mysqli_escape_string($mysqli, $db);
 	$table = mysqli_real_escape_string($mysqli, $table);
 
-	echo "double lolhmmmmmm....<br>";
 	if(!mysqli_select_db($mysqli, $db)){
 		die("error selecting db...".$mysqli->error);}
 	else{
@@ -90,21 +89,14 @@ function buildFields($table, $db){
 //============================================================
         global $mysqli;
 
-	echo "t: ".$table." db: ".$db." -<br>";
 	$table = mysqli_real_escape_string($mysqli, $table);
 	$db = mysqli_escape_string($mysqli, $db);
 
         $newFieldList = array();
-	echo "t: ".$table." db: ".$db." -<br>";
-
-
 
         $q = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '".$db."' AND TABLE_NAME = '".$table."'";
-	echo "q:".$q."-<br>";
         if($query = $mysqli->query($q)){
-		echo "5 step<br>";
 	        while($row = $query->fetch_assoc()){
-			echo "2 step";
         	        if($row['COLUMN_NAME']!="id"){ //we don't need the ID for a table field. We'll get that in the other functions
         	                 $result[]=$row;
         	        }
@@ -112,15 +104,12 @@ function buildFields($table, $db){
         	                //nothing
         	        }
 		}
-		echo "3 step<br>";
 	}
 	else{
 		die('there was an error with building fields...:'.$mysqli->error);
 	}
-
         $newFieldList = array_column($result, 'COLUMN_NAME');
 
-	echo "hmmmm...<br>";
         return $newFieldList;
 }
 function printTableHead($tableFields){
