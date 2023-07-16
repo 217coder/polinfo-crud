@@ -220,8 +220,8 @@ function printRow($row, $i, $tableFields){
                 echo "<tr>";    }
 
         //print edit & delete buttons
-        echo "<td><a href=?edit=".$row[$key].">Edit</a></td>
-               <td><a href=".$_SERVER['PHP_SELF']."?a=rusure&item=".$row[$key].">Delete</a></td>";
+        echo "<td><a href=?action=edit&item=".$row[$key].">Edit</a></td>
+               <td><a href=".$_SERVER['PHP_SELF']."?action=delete&item=".$row[$key].">Delete</a></td>";
         echo '<td>'.$row['id'].'</td>';
 
         $c = count($tableFields); //temp $c(ount) variable
@@ -400,7 +400,7 @@ function areYouSure($id, $table){
         echo "<br><br>Are you sure you want to delete with this command??";
 
         echo "<a href=\"".$_SERVER[PHP_SELF]."?a=list\">No</a>
-        <a href=\"".$_SERVER[PHP_SELF]."?a=delete&item=".$v."\">Yes</a>";
+        <a href=\"".$_SERVER[PHP_SELF]."?action=deleteforreal&item=".$v."\">Yes</a>";
 }
 
 

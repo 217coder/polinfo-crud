@@ -15,7 +15,7 @@ function printDashboardOptions($currentAction){
 
 }
 
-function handleAction($currentAction){
+function handleAction($currentAction, $item){
 	switch($currentAction){
 		case "Logout":
 			logout();
@@ -40,6 +40,18 @@ function handleAction($currentAction){
 			break;
 		case "CodeList":
 			printCodeList();
+			break;
+		case "edit":
+			echo "print an edit form for the item selected...<br>";
+			//printEditForm($item);
+			break;
+		case "delete":
+			echo "print a delete form for the item selected...<br>";
+			//printAreYouSureYouWannaDelete($item);
+			break;
+		case "deleteforreal":
+			echo "print txt to confirm delete...<br>";
+			//securedelete($item);
 			break;
 		default:
 			echo "Please make a selection...";

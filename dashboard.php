@@ -28,9 +28,10 @@ session_start();?>
 bounce(); //confirm if logged in
 echo "welcome to the DashBoard<br>";
 $a = $_GET["action"];
+$item = $_GET["item"];
 printDashboardOptions($a);
 echo "<u>output & debug info:</U><br>";
-handleAction($a);
+handleAction($a, $item);
 echo "<br>test footer";
 ?>
 </div>
