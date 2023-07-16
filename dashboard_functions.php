@@ -38,7 +38,8 @@ function handleAction($currentAction){
 			echo "put code here to print out a users list<br>";
 			break;
 		case "CodeList":
-			echo "put code here to print out a code list<br>";
+			echo "pput code here to print out a code list<br>";
+			printCodeList();
 			break;
 		default:
 			echo "Please make a selection...";
@@ -64,4 +65,17 @@ function updatePasswordForm(){
 		echo "everything worked?...<br>";
 	}
 }
+
+function printCodeList(){
+	global $codes;
+	global $polinfo_db;
+	echo "moddsssswhoopssssss....c: ".$codes." db: ".$polinf_db." <br>";
+	$fields = buildFields($codes, $polinfo_db);
+	printDBTable($polinfo_db, $codes, $fields);
+}
+
+function printUserList(){
+
+}
+
 ?>

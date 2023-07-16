@@ -20,6 +20,7 @@ $dbuser = 'root';
 $polinfo_db = 'polinfo_coredata_2023';
 $users = 'users';//name of table for users
 $codes = 'codes';//name of table for codes
+$key = "id";//used for the key values of our tables, perhaps unnecessary?
 
 $mysqli = new mysqli($dbhost, $dbuser, $dbpass); //create sql connection
 if ($mysqli->connect_error) {
@@ -53,6 +54,115 @@ function checkForTable($dbName, $dbTable){
 		return 1;}
 	else{ //table does NOT exist
 		return 0;}
+}
+
+function printDBTable($db, $table, $tableFields){
+        global $mysqli;
+	$db = mysqli_escape_string($mysqli, $db);
+	$table = mysqli_real_escape_string($mysqli, $table);
+
+	echo "double lolhmmmmmm....<br>";
+	if(!mysqli_select_db($mysqli, $db)){
+		die("error selecting db...".$mysqli->error);}
+	else{
+	        if($query = $mysqli->query("SELECT * FROM ".$table.";")){ //build an sql $query
+		        $totalRows = $query->num_rows; //get a row count
+
+		        printTableHead($tableFields);
+
+		        for($i=0; $i<$totalRows; $i++){ //print each row
+		                $row = mysqli_fetch_array($query);
+	        	        printRow($row, $i, $tableFields);
+	       		}
+		        echo "</table>"; //close out table
+		}
+		else{
+			die('there was an error with printing table...:'.$mysqli->error);
+		}
+	}
+}
+
+function buildFields($table, $db){
+//============================================================
+//Build a list of fields for our various functions.
+//Give it a $table name, and it will pull the field titles for that table
+//it returns the $newFields that it found
+//============================================================
+        global $mysqli;
+
+	echo "t: ".$table." db: ".$db." -<br>";
+	$table = mysqli_real_escape_string($mysqli, $table);
+	$db = mysqli_escape_string($mysqli, $db);
+
+        $newFieldList = array();
+	echo "t: ".$table." db: ".$db." -<br>";
+
+
+
+        $q = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '".$db."' AND TABLE_NAME = '".$table."'";
+	echo "q:".$q."-<br>";
+        if($query = $mysqli->query($q)){
+		echo "5 step<br>";
+	        while($row = $query->fetch_assoc()){
+			echo "2 step";
+        	        if($row['COLUMN_NAME']!="id"){ //we don't need the ID for a table field. We'll get that in the other functions
+        	                 $result[]=$row;
+        	        }
+        	        else {
+        	                //nothing
+        	        }
+		}
+		echo "3 step<br>";
+	}
+	else{
+		die('there was an error with building fields...:'.$mysqli->error);
+	}
+
+        $newFieldList = array_column($result, 'COLUMN_NAME');
+
+	echo "hmmmm...<br>";
+        return $newFieldList;
+}
+function printTableHead($tableFields){
+        echo "<table><tr>"; //begin printing html
+
+        echo "<th>Edit</th>
+                <th>Delete</th>
+                  <th>ID</th>";
+
+
+        $c = count($tableFields); //count headers/fields
+        echo $c;
+        for($i=0;$i<$c;$i++){ //print each header
+                $header=$tableFields[$i]; //set temp $header
+
+                echo '<th>'.$header.'</th>';
+        }
+        echo "</tr>"; //and the rest
+}
+function printRow($row, $i, $tableFields){
+        global $key;
+
+        if($i%2){ //shade every other line darker or lighter
+//              echo '<tr class="altline">AA';
+                echo '<tr style="color:#550055">';
+        }
+        else{
+                echo "<tr>";    }
+
+        //print edit & delete buttons
+        echo "<td><a href=?edit=".$row[$key].">Edit</a></td>
+               <td><a href=".$_SERVER['PHP_SELF']."?a=rusure&item=".$row[$key].">Delete</a></td>";
+        echo '<td>'.$row['id'].'</td>';
+
+        $c = count($tableFields); //temp $c(ount) variable
+        for($j=0;$j<$c;$j++){ //print each $field
+                $v = strtolower($tableFields[$j]);
+                echo "<td>".$row[$v]."</td>";
+        }
+
+
+        echo "</tr>"; //and the rest
 }
 
 function registerUser($username, $password, $code){
