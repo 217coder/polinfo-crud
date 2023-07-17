@@ -2,6 +2,24 @@
 include("basefunctions.php");
 $actionList = array("Logout", "ChangePassword", "CreateElection", "ManageElections", "GenerateRegistrationCode", "UserList", "CodeList");
 
+function setDashboardSessionVariables(){
+	//helps with managing the db & table we are on and looking at.
+	global $polinfo_db;
+	$defaultDB = $polinfo_db;
+	$currentDB = $_SESSION["currentdb"];
+	if(!$currentDB){
+		$_SESSION["currentdb"] = $defaultDB;
+	}
+}
+function printAdditionalDebugInfo(){
+	$db = $_SESSION["currentdb"];
+	$table = $_SESSION["currentdbtable"];
+	$action = $_GET["action"];
+	$item = $_GET["item"];
+	echo "db: <b>".$db."</b> dbTable: <b>".$table."</b><br>";
+	echo "action: <b>".$action."</b> item: <b>".$item."</b><br>";
+}
+
 function printDashboardOptions($currentAction){
 	global $actionList;
 	echo "<center>";
@@ -43,7 +61,7 @@ function handleAction($currentAction, $item){
 			break;
 		case "edit":
 			echo "print an edit form for the item selected...<br>";
-			//printEditForm($item);
+			prepEditForm($item);
 			break;
 		case "delete":
 			echo "print a delete form for the item selected...<br>";
@@ -81,6 +99,7 @@ function updatePasswordForm(){
 function printCodeList(){
 	global $codes;
 	global $polinfo_db;
+	setSessionDBandTable($polinfo_db, $codes);
 	$fields = buildFields($codes, $polinfo_db);
 	echo "<center>";
 	printDBTable($polinfo_db, $codes, $fields);
@@ -90,12 +109,30 @@ function printCodeList(){
 function printUserList(){
 	global $users;
 	global $polinfo_db;
-//	echo "moddsssswhoopssssss....c: ".$codes." db: ".$polinf_db." <br>";
+	setSessionDBandTable($polinfo_db, $users);
 	$fields = buildFields($users, $polinfo_db);
 	echo "<center>";
 	printDBTable($polinfo_db, $users, $fields);
 	echo "</center>";
 
 }
+
+function setSessionDBandTable($db, $table){
+//magic variable? put into a function to replicate/change easily throughout...?
+	$_SESSION["currentdb"]=$db;
+	$_SESSION["currentdbtable"]=$table;
+}
+function prepEditForm($item){
+	$db=$_SESSION["currentdb"];
+	$table=$_SESSION["currentdbtable"];
+	if($db==NULL || $table==NULL){
+		echo "not all variables are preseant to edit...<br>"; }
+	else{
+		echo "edit form...<br>";
+		printEditForm($db, $table, $item);
+		echo "end of edit form<br>";
+	}
+}
+
 
 ?>

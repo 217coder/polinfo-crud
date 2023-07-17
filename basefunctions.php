@@ -95,7 +95,7 @@ function printDBTable($db, $table, $tableFields){
 	}
 }
 
-function buildSuperFields($table, $dbname){
+function buildSuperFields($dbname, $table){
 //=============================================================
 //This function helps build an array of (data type, field name)
 //Makes it easier for the new/update entry form for datatype validation to avoid sql errors
@@ -106,11 +106,16 @@ function buildSuperFields($table, $dbname){
         $newFieldList = array();
 
 	$table = mysqli_real_escape_string($mysqli, $table);
-	$dbname = mysqli_escape_string($mysqli, $dbname);
+	$dbname = mysqli_real_escape_string($mysqli, $dbname);
 
 
-        $q = "SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '".$dbName."' AND TABLE_NAME = '".$table."'";
-//      echo "q:".$q."-<br>";
+        $q = "SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '".$dbname."' AND TABLE_NAME = '".$table."'";
+//	echo "q:".$q."-<br>";
+
+	if(!mysqli_select_db($mysqli, $dbname)){
+		die("BuilSuperFields: There was an error switching the db to ".$dbname." because of: ".mysqli_error($mysqli));
+	}
+
         $query = $mysqli->query($q);
 
 
@@ -233,42 +238,42 @@ function printRow($row, $i, $tableFields){
 
         echo "</tr>"; //and the rest
 }
-function printNewEditForm($id,$table,$tableFields, $dbname){
+function printEditForm($dbname, $table, $id){
         global $mysqli;
-        global $fields; //call global
+//        global $fields; //call global
         $cleanID = mysqli_real_escape_string($mysqli, $id);
 	$table = mysqli_real_escape_string($mysqli, $table);
-	$dbname = mysqli_escape_string($mysqli, $dbname);
+	$dbname = mysqli_real_escape_string($mysqli, $dbname);
+
+
+	echo "Welcome to NewEdit home of the NewEdit may I take your order!!<br>";
 
         $q="SELECT * FROM ".$table." WHERE id=".$cleanID.";";
         echo 'q: '.$q.'<br><br>';
 
-        $politician = $mysqli->query($q);
-        $pTotal = $politician->num_rows;
 
-        $superFields = buildSuperFields($table);
-        $qnaFields = array("q1","q2","q3","q4","a1","a2","a3","a4");
-        if($pTotal){
-                $pRow = mysqli_fetch_array($politician);
+	if(!mysqli_select_db($mysqli, $dbname)){
+		die("Edit Form: There was an error switching the db to ".$dbname." because of: ".mysqli_error($mysqli));
+	}
 
-                echo '<table>';
-                echo "<form action=\"?update=".$cleanID."\" method=\"post\">";
+	$result = $mysqli->query($q);
 
-                $c = count($superFields);
-                for($j=0;$j<$c;$j++){ //print each field as an editable form option
-                        $v = strtolower($superFields[$j]['COLUMN_NAME']);
-                        $datatype = strtolower($superFields[$j]['DATA_TYPE']);
-                        if(in_array($v, $qnaFields)){
-                                echo '<tr><td>'.$v.'</td><td>'.$datatype.'</td><td><textarea name="'.$v.'" cols="80" rows="8">'.$pRow[$v].'</textarea></td></tr>';
-                        }
-                        else{
-                                echo '<tr><td>'.$v.'</td><td>'.$datatype.'</td><td><textarea name="'.$v.'" cols="80" rows="1">'.$pRow[$v].'</textarea></td></tr>';
-                        }
-                }
+	$superFields = buildSuperFields($dbname, $table);
 
-                echo "<input type=\"submit\" value=\"update\"></form>
-                        <br></table>"; //and the rest of the form
-        }
+	if(!$result){
+		echo "Something went wrong with the query for the EditForm...<br>";}
+	else{
+		echo "<center><table>";
+		echo "<form action='?update=".$cleanID."' method='post'>";
+
+		$data = mysqli_fetch_array($result);
+		foreach($superFields as $value){
+			$v = strtolower($value['COLUMN_NAME']);
+			$datatype = strtolower($value['DATA_TYPE']);
+			echo "<tr><td>".$v."</td><td>".$datatype."</td><td><textarea name='".$v."' cols=80 rows=1>".$data[$v]."</textarea></td></tr>";
+		}
+		echo "<input type='submit' value='update'></form><br></table></center>";
+	}
 }
 //form for adding a new entry
 function printEntryForm($superFields){
