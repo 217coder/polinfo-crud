@@ -166,7 +166,7 @@ function buildSuperFieldsFromList($table, $list, $dbname){
         return $result;
 }
 
-function buildFields($table, $db){
+function buildFields($db, $table){
 //============================================================
 //Build a list of fields for our various functions.
 //Give it a $table name, and it will pull the field titles for that table
@@ -206,7 +206,6 @@ function printTableHead($tableFields){
 
 
         $c = count($tableFields); //count headers/fields
-        echo $c;
         for($i=0;$i<$c;$i++){ //print each header
                 $header=$tableFields[$i]; //set temp $header
 
@@ -240,7 +239,6 @@ function printRow($row, $i, $tableFields){
 }
 function printEditForm($dbname, $table, $id){
         global $mysqli;
-//        global $fields; //call global
         $cleanID = mysqli_real_escape_string($mysqli, $id);
 	$table = mysqli_real_escape_string($mysqli, $table);
 	$dbname = mysqli_real_escape_string($mysqli, $dbname);
@@ -264,7 +262,7 @@ function printEditForm($dbname, $table, $id){
 		echo "Something went wrong with the query for the EditForm...<br>";}
 	else{
 		echo "<center><table>";
-		echo "<form action='?update=".$cleanID."' method='post'>";
+		echo "<form action='?action=update&item=".$cleanID."' method='post'>";
 
 		$data = mysqli_fetch_array($result);
 		foreach($superFields as $value){
@@ -351,10 +349,21 @@ function addEntry($table, $tableFields){
 
 }
 //UpdateEntry, almost a copy of addEntry
-function updateEntry($id, $table, $tablefields){
+//this function gets all of it's data from $_POST
+function updateEntry($dbname, $table, $id){
         global $fields, $db_table, $key, $mysqli; //pull in globals
+	$dbname = mysqli_real_escape_string($mysqli, $dbname);
+
+	if(!mysqli_select_db($mysqli, $dbname)){
+		echo "UpdateEntry: error connecting to db: ".$dbname." because: ".mysqli_error($mysqli)."<br>";
+		return false;
+	}
+
 
         $query = "UPDATE ".$table." SET ";//start query
+
+	//bobbob
+	$tablefields = buildFields($dbname, $table);
 
         $c = count($tablefields);
         for($i=0;$i<$c;$i++){ //read in fields & values to update
@@ -372,7 +381,7 @@ function updateEntry($id, $table, $tablefields){
         }
         $query = $query." WHERE id=".$id.";";//cap off the $query
 
-        echo "q-".$query."-q";//print for fun
+        echo "q-".$query."<br>";//print for fun
 
         if(!$mysqli->query($query)){//insert and test for error
                 echo "there was a VERY critical error..".mysqli_error($mysqli).".";

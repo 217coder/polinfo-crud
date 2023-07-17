@@ -61,7 +61,12 @@ function handleAction($currentAction, $item){
 			break;
 		case "edit":
 			echo "print an edit form for the item selected...<br>";
-			prepEditForm($item);
+			prepEditForm($item); //prep the variables for the edit form, and then call it.
+			break;
+		case "update":
+			echo "update a variable...<br>";
+			prepUpdateEntry($item); //pre the variable for the updateEntry() function
+			//updateItem($item)
 			break;
 		case "delete":
 			echo "print a delete form for the item selected...<br>";
@@ -100,7 +105,7 @@ function printCodeList(){
 	global $codes;
 	global $polinfo_db;
 	setSessionDBandTable($polinfo_db, $codes);
-	$fields = buildFields($codes, $polinfo_db);
+	$fields = buildFields($polinfo_db, $codes);
 	echo "<center>";
 	printDBTable($polinfo_db, $codes, $fields);
 	echo "</center>";
@@ -110,7 +115,7 @@ function printUserList(){
 	global $users;
 	global $polinfo_db;
 	setSessionDBandTable($polinfo_db, $users);
-	$fields = buildFields($users, $polinfo_db);
+	$fields = buildFields($polinfo_db, $users);
 	echo "<center>";
 	printDBTable($polinfo_db, $users, $fields);
 	echo "</center>";
@@ -131,6 +136,20 @@ function prepEditForm($item){
 		echo "edit form...<br>";
 		printEditForm($db, $table, $item);
 		echo "end of edit form<br>";
+	}
+}
+function prepUpdateEntry($item){
+	$db=$_SESSION["currentdb"];
+	$table=$_SESSION["currentdbtable"];
+	if($db==NULL || $table==NULL){
+		echo "not all variables are preseant to edit...<br>"; }
+	else{
+		echo "updating...<br>";
+		updateEntry($db, $table, $item);
+		echo "<br>update complete??? yes...<br>";
+		echo "<center>";
+		printDBTable($db, $table, buildFields($db, $table));
+		echo "</center>";
 	}
 }
 
