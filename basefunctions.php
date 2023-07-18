@@ -646,10 +646,24 @@ function bounce(){
 }
 
 function bounceAdmin(){
-	if(!$_SESSION["admin"]){
-		header('Location: main.php');
-		die();
+	global $mysqli;
+	global $polinfo_db;
+	global $users;
+
+	$userid = $_SESSION["userid"];
+
+	$data = fetchRow($userid, "id", $users, $polinfo_db);
+	if($data["access_level"]>100){
+		//user is admin level
+		//echo "Access granted for ".$data["username"].".<br>";
+		return true;
 	}
+	else{
+		//echo "User ".$data["username"]." only has an access_level of ".$data["access_level"].", needs level 101 or greater.<br>";
+		return false;
+	}
+
+	echo "this should not print....<br><br><br>";
 }
 
 function logout(){

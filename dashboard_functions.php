@@ -69,12 +69,14 @@ function handleAction($currentAction, $item){
 			//updateItem($item)
 			break;
 		case "delete":
-			echo "print a delete form for the item selected...<br>";
+			echo "Print a delete form for the item selected...<br>";
+			printDeleteConfirmation($item);
+			//adminBounce
 			//printAreYouSureYouWannaDelete($item);
 			break;
-		case "deleteforreal":
-			echo "print txt to confirm delete...<br>";
-			//securedelete($item);
+		case "confirmdelete":
+			echo "Print txt to confirm delete...<br>";
+			deleteForSure($item);
 			break;
 		default:
 			echo "Please make a selection...";
@@ -142,7 +144,7 @@ function prepUpdateEntry($item){
 	$db=$_SESSION["currentdb"];
 	$table=$_SESSION["currentdbtable"];
 	if($db==NULL || $table==NULL){
-		echo "not all variables are preseant to edit...<br>"; }
+		echo "not all variables are preseant to update...<br>"; }
 	else{
 		echo "updating...<br>";
 		updateEntry($db, $table, $item);
@@ -152,6 +154,46 @@ function prepUpdateEntry($item){
 		echo "</center>";
 	}
 }
+function printDeleteConfirmation($item){
+	$db=$_SESSION["currentdb"];
+	$table=$_SESSION["currentdbtable"];
+	if($db==NULL || $table==NULL){
+		echo "not all variables are preseant to delete...<br>"; }
+	else{
+		if(!bounceAdmin()){
+			echo "You do not have a high enough user_access level to do deletion. Please check with admin.<br>";
+		}
+		else{
+			echo "Are you sure you would like to delete? This can not be undone. Please type '<b>I am sure</b>' in the box bellow (without the quotation marks).<br>";
+			echo "<center><form action='?action=confirmdelete&item=".$item."' method='post'>";
+			echo "<textarea name='confirmation' cols=80 rows=1></textarea><br>";
+			echo "<input type='submit' value='DELETE'></form></center>";
+		}
 
+		echo "<center>";
+		printDBTable($db, $table, buildFields($db, $table));
+		echo "</center>";
+	}
 
+}
+function deleteForSure($item){
+	$db=$_SESSION["currentdb"];
+	$table=$_SESSION["currentdbtable"];
+	if($db==NULL || $table==NULL){
+		echo "not all variables are preseant to delete...<br>"; }
+	else{
+		if(!bounceAdmin()){
+			echo "You do not have a high enough user_access level to do deletion. Please check with admin.<br>";
+		}
+		else{
+			$confirmation = $_POST["confirmation"];
+			if(!($confirmation=="I am sure")){
+				echo "Your confirmation (".$confirmation.") did not match what was required. Please try again.<br>";
+			}
+			else{
+				echo "Eeverything looks to be in order... deleting your item...<br>";
+			}
+		}
+	}
+}
 ?>
