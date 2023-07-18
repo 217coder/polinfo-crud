@@ -31,8 +31,8 @@ if ($polinfo_conn->connect_error){
 	echo("error connecting to polinfo_db: ".$polinfo_conn->connect_error."<br>");
 }
 
-$fields = array("racekey", "link_type", "link_source", "link_icon", "link_address");
-$test_fields = array();
+//$fields = array("racekey", "link_type", "link_source", "link_icon", "link_address"); //old variable? not used?
+
 $candidateDefaultFields =  array("name","party","phone","email","website","twitter","facebook","instagram","race_key","photo");
 
 //the $tables we want to be able to switch between - THESE ARE ENTERED BY HAND
@@ -103,7 +103,6 @@ function buildSuperFields($dbname, $table){
 //this returns the results it found from the $table you give it.
 //=============================================================
         global $mysqli;
-        global $test_fields;
         $newFieldList = array();
 
 	$table = mysqli_real_escape_string($mysqli, $table);
@@ -142,7 +141,6 @@ function buildSuperFieldsFromList($table, $list, $dbname){
 //----------------------------------------------
 
         global $mysqli;
-        global $test_fields;
 	$table = mysqli_real_escape_string($mysqli, $table);
 	$dbname = mysqli_escape_string($mysqli, $dbname);
 
@@ -301,7 +299,6 @@ function printEditForm($dbname, $table, $id){
 }
 //form for adding a new entry
 function printEntryForm($superFields){
-        global $fields; //call in global
         global $defaultLevel, $defaultCountywide, $defaultSeats;
         global $candidateDefaultFields;
 
@@ -341,7 +338,7 @@ function printEntryForm($superFields){
 }
 //add entry (from form) into database
 function addEntry($table, $tableFields){
-        global $fields, $db_table, $mysqli; //pull in globals
+        global $mysqli; //pull in globals
 
         $query = "INSERT INTO ".$table." (";//start query
 
@@ -377,7 +374,7 @@ function addEntry($table, $tableFields){
 //UpdateEntry, almost a copy of addEntry
 //this function gets all of it's data from $_POST
 function updateEntry($dbname, $table, $id){
-        global $fields, $db_table, $key, $mysqli; //pull in globals
+        global $key, $mysqli; //pull in globals
 	$dbname = mysqli_real_escape_string($mysqli, $dbname);
 
 	if(!mysqli_select_db($mysqli, $dbname)){
@@ -415,7 +412,7 @@ function updateEntry($dbname, $table, $id){
 }
 //delete entry
 function deleteEntry($dbname, $table, $id){
-        global $mysqli, $db_table, $key; //call globals
+        global $mysqli, $key; //call globals
 	$db = mysqli_real_escape_string($mysqli, $dbname);
         $t = mysqli_real_escape_string($mysqli, $table);//no injects plz
         $v = mysqli_real_escape_string($mysqli, $id);//no injects plz
