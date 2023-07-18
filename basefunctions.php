@@ -74,6 +74,7 @@ function printDBTable($db, $table, $tableFields){
         global $mysqli;
 	$db = mysqli_escape_string($mysqli, $db);
 	$table = mysqli_real_escape_string($mysqli, $table);
+	$admin = bounceAdmin(); //true if admin, false if not
 
 	if(!mysqli_select_db($mysqli, $db)){
 		die("error selecting db...".$mysqli->error);}
@@ -81,11 +82,11 @@ function printDBTable($db, $table, $tableFields){
 	        if($query = $mysqli->query("SELECT * FROM ".$table.";")){ //build an sql $query
 		        $totalRows = $query->num_rows; //get a row count
 
-		        printTableHead($tableFields);
+		        printTableHead($tableFields, $admin);
 
 		        for($i=0; $i<$totalRows; $i++){ //print each row
 		                $row = mysqli_fetch_array($query);
-	        	        printRow($row, $i, $tableFields);
+				printRow($row, $i, $tableFields, $admin);
 	       		}
 		        echo "</table>"; //close out table
 		}
@@ -197,12 +198,13 @@ function buildFields($db, $table){
 
         return $newFieldList;
 }
-function printTableHead($tableFields){
+function printTableHead($tableFields, $admin){
         echo "<table><tr>"; //begin printing html
 
-        echo "<th>Edit</th>
-                <th>Delete</th>
-                  <th>ID</th>";
+        echo "<th>Edit</th>";
+	if($admin){
+		echo "<th>Delete</th>";}
+	echo "<th>ID</th>";
 
 
         $c = count($tableFields); //count headers/fields
@@ -213,7 +215,7 @@ function printTableHead($tableFields){
         }
         echo "</tr>"; //and the rest
 }
-function printRow($row, $i, $tableFields){
+function printRow($row, $i, $tableFields, $admin){
         global $key;
 
         if($i%2){ //shade every other line darker or lighter
@@ -224,8 +226,32 @@ function printRow($row, $i, $tableFields){
                 echo "<tr>";    }
 
         //print edit & delete buttons
-        echo "<td><a href=?action=edit&item=".$row[$key].">Edit</a></td>
-               <td><a href=".$_SERVER['PHP_SELF']."?action=delete&item=".$row[$key].">Delete</a></td>";
+        echo "<td><a href=?action=edit&item=".$row[$key].">Edit</a></td>";
+	if($admin){
+		echo "<td><a href=".$_SERVER['PHP_SELF']."?action=delete&item=".$row[$key].">Delete</a></td>";}
+        echo '<td>'.$row['id'].'</td>';
+
+        $c = count($tableFields); //temp $c(ount) variable
+        for($j=0;$j<$c;$j++){ //print each $field
+                $v = strtolower($tableFields[$j]);
+                echo "<td>".$row[$v]."</td>";
+        }
+
+
+        echo "</tr>"; //and the rest
+}
+function printAdminRow($row, $i, $tableFields){ //this probably didn't need to be a second function, but this is quick & dirty to hide the delete button if you aren't admin
+        global $key;
+
+        if($i%2){ //shade every other line darker or lighter
+//              echo '<tr class="altline">AA';
+                echo '<tr style="color:#550055">';
+        }
+        else{
+                echo "<tr>";    }
+
+        //print edit & delete buttons
+        echo "<td><a href=?action=edit&item=".$row[$key].">Edit</a></td>";
         echo '<td>'.$row['id'].'</td>';
 
         $c = count($tableFields); //temp $c(ount) variable
@@ -596,15 +622,6 @@ function printTable($query, $header){
 	}
 	echo "</table>";
 }
-
-function printTableHeader($names){
-	echo '<tr class="left">';
-	for($i=0;$i<count($names);$i++){
-		echo '<th>'.$names[$i].'</th>';
-	}
-	echo '</tr>';
-}
-
 
 function fetchRandomRow($query, $table){
 	//no inject?
