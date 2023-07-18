@@ -238,29 +238,6 @@ function printRow($row, $i, $tableFields, $admin){
 
         echo "</tr>"; //and the rest
 }
-function printAdminRow($row, $i, $tableFields){ //this probably didn't need to be a second function, but this is quick & dirty to hide the delete button if you aren't admin
-        global $key;
-
-        if($i%2){ //shade every other line darker or lighter
-//              echo '<tr class="altline">AA';
-                echo '<tr style="color:#550055">';
-        }
-        else{
-                echo "<tr>";    }
-
-        //print edit & delete buttons
-        echo "<td><a href=?action=edit&item=".$row[$key].">Edit</a></td>";
-        echo '<td>'.$row['id'].'</td>';
-
-        $c = count($tableFields); //temp $c(ount) variable
-        for($j=0;$j<$c;$j++){ //print each $field
-                $v = strtolower($tableFields[$j]);
-                echo "<td>".$row[$v]."</td>";
-        }
-
-
-        echo "</tr>"; //and the rest
-}
 function printEditForm($dbname, $table, $id){
         global $mysqli;
         $cleanID = mysqli_real_escape_string($mysqli, $id);
