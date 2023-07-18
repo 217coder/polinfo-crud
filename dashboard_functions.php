@@ -164,13 +164,15 @@ function printDeleteConfirmation($item){
 			echo "You do not have a high enough user_access level to do deletion. Please check with admin.<br>";
 		}
 		else{
-			echo "Are you sure you would like to delete? This can not be undone. Please type '<b>I am sure</b>' in the box bellow (without the quotation marks).<br>";
+			$data = fetchRow($db, $table, $item, $db);
+			echo "Are you sure you would like to delete? Item: <b>".$item."</b> From DB: <b>".$db."</b> and Table: <b>".$table."</b><br>";
+			echo "This can not be undone. Please type '<b>I am sure</b>' in the box bellow (without the quotation marks).<br>";
 			echo "<center><form action='?action=confirmdelete&item=".$item."' method='post'>";
 			echo "<textarea name='confirmation' cols=80 rows=1></textarea><br>";
 			echo "<input type='submit' value='DELETE'></form></center>";
 		}
 
-		echo "<center>";
+		echo "<br><br><center>";
 		printDBTable($db, $table, buildFields($db, $table));
 		echo "</center>";
 	}
@@ -192,6 +194,8 @@ function deleteForSure($item){
 			}
 			else{
 				echo "Eeverything looks to be in order... deleting your item...<br>";
+				deleteEntry($db, $table, $item);
+				echo "Did the delete work??? Yes...<br>";
 			}
 		}
 	}

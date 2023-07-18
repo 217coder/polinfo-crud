@@ -388,13 +388,20 @@ function updateEntry($dbname, $table, $id){
         }
 }
 //delete entry
-function deleteEntry($id, $table){
+function deleteEntry($dbname, $table, $id){
         global $mysqli, $db_table, $key; //call globals
-        $v = mysqli_real_escape_string($mysqli, $id);//no injects plz
+	$db = mysqli_real_escape_string($mysqli, $dbname);
         $t = mysqli_real_escape_string($mysqli, $table);//no injects plz
+        $v = mysqli_real_escape_string($mysqli, $id);//no injects plz
+
+
         $query ="DELETE FROM ".$t." WHERE id=".$v.";";//build $query
 
         echo "executing ".$query."...<br><br>";
+
+	if(!mysqli_select_db($mysqli, $db)){
+		die("DeleteEntry: There was an error switching the db to ".$db." because of: ".mysqli_error($mysqli));
+	}
 
         if(!$mysqli->query($query)){//test query for error
                 echo "OH no... there was an error-".mysqli_error($mysqli).".";
@@ -485,7 +492,7 @@ function fetchRow($value, $column, $table, $db){
 	$table = mysqli_real_escape_string($mysqli, $table);
 
 	if(!mysqli_select_db($mysqli, $db)){
-		echo "error connecting to db: ".$db." because: ".$mysqli->error."<br>";
+		echo "FetchRow: error connecting to db: ".$db." because: ".$mysqli->error."<br>";
 		return false;
 	}
 	else{
