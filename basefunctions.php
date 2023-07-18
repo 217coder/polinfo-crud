@@ -574,29 +574,6 @@ function generateCode(){
 	}
 }
 
-function printTable($query, $header){
-	//does this need no inject???
-	$result=$mysql->query($query);
-	//seems unnecesary? v
-	//$total_rows = $result->num_rows;
-	echo "<table>";
-	//deprecated? v
-	//printTableHeader($header);
-	echo '<tr class="left">';
-	for($i=0;$i<count($header);$i++){
-		echo '<th>'.$header[$i].'</th>';
-	}
-	echo "</tr>";
-	while($row = mysqli_fetch_array($result)){
-		echo '<tr>';
-		for($i=0;$i<count($row);$i++){
-			echo '<td>'.$row[$i].'</td>';
-		}
-		echo '</tr>';
-	}
-	echo "</table>";
-}
-
 function fetchRandomRow($query, $table){
 	//no inject?
 	$result = $mysqli->query($query);
@@ -738,6 +715,31 @@ function checkPasswordStrength($password){
 		return 1;
 	}
 }
+
+//legacy code - to be deleted...
+/*function printTable($query, $header){
+	//does this need no inject???
+	$result=$mysql->query($query);
+	//seems unnecesary? v
+	//$total_rows = $result->num_rows;
+	echo "<table>";
+	//deprecated? v
+	//printTableHeader($header);
+	echo '<tr class="left">';
+	for($i=0;$i<count($header);$i++){
+		echo '<th>'.$header[$i].'</th>';
+	}
+	echo "</tr>";
+	while($row = mysqli_fetch_array($result)){
+		echo '<tr>';
+		for($i=0;$i<count($row);$i++){
+			echo '<td>'.$row[$i].'</td>';
+		}
+		echo '</tr>';
+	}
+	echo "</table>";
+}*/
+
 /*function printNavBar(){
 	echo '<table>
 		<th><a href="myaccount.php">'.$_SESSION["username"].'</a></th>

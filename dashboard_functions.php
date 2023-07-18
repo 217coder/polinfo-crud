@@ -43,9 +43,11 @@ function handleAction($currentAction, $item){
 			break;
 		case "CreateElection":
 			echo "Create Election code";
+			//prepCreateElectionForm(); //prep the variables for the new election db
 			break;
 		case "ManageElections":
 			echo "Manage Elections code";
+			//printManageElectionMenu(); //print info for managing the different elections in the db
 			break;
 		case "GenerateRegistrationCode":
 			$c = generateCode();
@@ -65,21 +67,18 @@ function handleAction($currentAction, $item){
 			break;
 		case "update":
 			echo "update a variable...<br>";
-			prepUpdateEntry($item); //pre the variable for the updateEntry() function
-			//updateItem($item)
+			prepUpdateEntry($item); //prep the variable for the updateEntry() function
 			break;
 		case "delete":
 			echo "Print a delete form for the item selected...<br>";
 			printDeleteConfirmation($item);
-			//adminBounce
-			//printAreYouSureYouWannaDelete($item);
 			break;
 		case "confirmdelete":
 			echo "Print txt to confirm delete...<br>";
 			deleteForSure($item);
 			break;
 		default:
-			echo "Please make a selection...";
+			echo "Please make a selection...<br>";
 	}
 
 }
@@ -200,4 +199,11 @@ function deleteForSure($item){
 		}
 	}
 }
+
+function prepCreateElectionForm(){
+	//get variables ready for new election create form
+
+	//print election table
+}
+
 ?>

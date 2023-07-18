@@ -26,7 +26,7 @@ session_start();?>
 <?php
 
 //list of configurable variables
-//$polinfo_db = "polinfo_coredata_2023";
+//$polinfo_db = "polinfo_coredata_2023"; //now part of basefunctions
 $users = "users";
 $elections = "elections";
 $codes = "codes";
@@ -93,7 +93,7 @@ else{
 				}
 			}
 			else{
-				echo "you said you want to delete everything... !!!THIS CAN NOT BE UNDONE!!!<br>";
+				echo "you said you want to delete everything... <b><u>!!!THIS CAN NOT BE UNDONE!!!</u></b><br>";
 				echo "to confirm deleting EVERYTHING PERMANENTLY please type secret password<br>";
 				echo '<form action="install.php?uninstall=1" method="post">';
 				echo 'secret: <input type="text" name="secret"><br>';
