@@ -182,24 +182,44 @@ function prepUpdateEntry($item){
 	}
 }
 function prepAddNew($item){
+	global $elections;
 	$db=$_SESSION["currentdb"];
 	$table=$_SESSION["currentdbtable"];
 	if($db==NULL || $table==NULL){
 		echo "Missing db or table, can not add new entry....<br>"; }
 	else if($item==$table){
+		if($table==$elections){ //code is more complex for adding elections, need to also build new db and confirm it's good.
+			echo "Need to build a new db for the new election...<br>";
+			$newDBName = $_POST["db_name"];
+			if(!$newDBName){
+				echo "not all variables are here to create new db... dbname is missing?<br>";
+				return false;
+			}
+			else{
+				if(!buildNewElectionDB($newDBName)){
+					echo "something went wrong creating the new db... exiting...<br>";
+					return false;
+				}
+				else{
+					echo "Now to add new db entry into <b>".$election."</b> table...<br>";
+				}
+			}
+		}
+//		else{ //we're adding another type of value, and don't need to build a new db...
 		echo "adding... <br>";
 		$fields = buildFields($db, $table);
 		addEntry($db, $table, $fields);
-		echo "<br>done!<br>";
+		echo "<br><b>Done! Looks like it was a SUCCESS.</b><br>";
 		echo "<center>";
 		printDBTable($db, $table, $fields);
 		echo "</center>";
 	}
 	else{
-		echo "something went wrong...<br>";
+		echo "something went wrong with item equals table...<br>";
 	}
 }
 function printDeleteConfirmation($item){
+	global $elections;
 	$db=$_SESSION["currentdb"];
 	$table=$_SESSION["currentdbtable"];
 	if($db==NULL || $table==NULL){
@@ -208,8 +228,18 @@ function printDeleteConfirmation($item){
 		if(!bounceAdmin()){
 			echo "You do not have a high enough user_access level to do deletion. Please check with admin.<br>";
 		}
+		else if($table==$elections){ //handle different for deleting a full election db
+			//$data = fetchRow($db, $table, $item, $db);
+			$data = fetchRow($item, "id", $table, $db);
+			echo "<b><u>!!!WARNING!!!</b></u><br>";
+			echo "Are you sure you would like to delete? DB: <b>".$data['db_name']."</b><br>";
+			echo "<b><u>This can not be undone</b></u>. Please type '<b>I am SURE that I want to delete the entire database</b>' in the box bellow (without the quotation marks).<br>";
+			echo "<center><form action='?action=confirmdelete&item=".$item."' method='post'>";
+			echo "<textarea name='confirmation' cols=80 rows=1></textarea><br>";
+			echo "<input type='submit' value='DELETE'></form></center>";
+		}
 		else{
-			$data = fetchRow($db, $table, $item, $db);
+			//$data = fetchRow($db, $table, $item, $db);
 			echo "Are you sure you would like to delete? Item: <b>".$item."</b> From DB: <b>".$db."</b> and Table: <b>".$table."</b><br>";
 			echo "This can not be undone. Please type '<b>I am sure</b>' in the box bellow (without the quotation marks).<br>";
 			echo "<center><form action='?action=confirmdelete&item=".$item."' method='post'>";
@@ -224,6 +254,8 @@ function printDeleteConfirmation($item){
 
 }
 function deleteForSure($item){
+	global $elections;
+	global $mysqli;
 	$db=$_SESSION["currentdb"];
 	$table=$_SESSION["currentdbtable"];
 	if($db==NULL || $table==NULL){
@@ -232,7 +264,37 @@ function deleteForSure($item){
 		if(!bounceAdmin()){
 			echo "You do not have a high enough user_access level to do deletion. Please check with admin.<br>";
 		}
-		else{
+		else if($table==$elections){//handle differently when deleting a full election DB, these are special
+			$confirmation = $_POST["confirmation"];
+			if(!($confirmation=="I am SURE that I want to delete the entire database")){
+				echo "Your confirmation (".$confirmation.") did not match what was required. Please try again.<br>";
+			}
+			else{
+				echo "Eeverything looks to be in order... deleting your database...<br>";
+				$data = fetchRow($item, "id", $table, $db);
+				$dbname = $data["db_name"];
+				if(!$dbname){
+					echo "somehow missing db_name?? Unable to delete without that, please try again...<br>";}
+				else{
+					echo "deleting the db <b>".$dbname."</b>...<br>";
+					$q = "DROP DATABASE ".$dbname.";";
+					echo "q: ".$q." -<br>";
+					$result = $mysqli->query($q);
+					if(!$result){
+						echo "There was a problem deleting the election table ".$dbname." because: ".mysqli_error($mysqli)."<br>";
+						//return false;
+					}
+					else{
+						echo "Successfully deleted the db <b>".$dbname."</b>, now removing entry from list...<br>";
+						deleteEntry($db, $table, $item);
+						echo "<b>Looks like everything should be good to go!</b>...<br>";
+					}
+				}
+				//deleteDB();
+				echo "End of block...<br>";
+			}
+		}
+		else{ //it's a normal row in a table to delte
 			$confirmation = $_POST["confirmation"];
 			if(!($confirmation=="I am sure")){
 				echo "Your confirmation (".$confirmation.") did not match what was required. Please try again.<br>";
@@ -245,12 +307,18 @@ function deleteForSure($item){
 		}
 	}
 }
+function deleteElectionDatabase($dbname){
 
+}
 function prepCreateElectionForm(){
 	global $elections;
 	global $mysqli;
 	global $polinfo_db;
 
+	if(!bounceAdmin()){
+		echo "You do not have high enough permission to create new election db. Please check with administrator.<br>";
+		return false;
+	}
 	setSessionDBandTable($polinfo_db, $elections);
 	//get variables ready for new election create form
 //	echo "prep form for election creation<br>;"
@@ -313,4 +381,155 @@ function changeElection($item){
 	}
 
 }
+function buildNewElectionDB($newdbname){
+	global $mysqli;
+	global $polinfo_db;
+	$contests = "contests";
+	$candidates = "candidates";
+
+	if(checkForDB($newdbname)){
+		echo "DB <b>".$newdbname."</b> already exists... unable to create new db... So instead, we will update existing one...<br>";
+	}
+	else{
+		//it doesn't exist, we can go ahead and create it
+		$q = "CREATE DATABASE ".$newdbname.";";
+		echo "q: ".$q." -<br>";
+		$result = $mysqli->query($q);
+		if(!$result){
+			echo "failed to create DB ".$newdbname." because of ".mysqli_error($mysqli)."<br>";
+			return false;
+		}
+		else{
+			echo "successfully created <b>".$newdbname."</b>!!<br>";
+		}
+	}
+	echo "now to create the tables...<br>";
+	if(!mysqli_select_db($mysqli, $newdbname)){
+		echo "failed to connect to new DB ".$dbname." because of ".mysqli_error($mysqli)."<br>";
+	}
+
+	if(checkForTable($newdbname, $contests)){
+		echo "The <b>".$contests."</b> table already exists, no need to recreate it...<br>";}
+	else{
+		echo "creating new <b>".$contests."</b> table for <b>".$newdbname."</b>...<br>";
+		//##################################################################################################
+		//$q = "big long string";
+		$q = "CREATE TABLE ".$contests." (
+			id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+			title varchar(255) DEFAULT NULL,
+			level varchar(100) DEFAULT NULL,
+			contest_group varchar(100) DEFAULT NULL,
+			contest_nickname varchar(100) DEFAULT NULL,
+			countywide int(11) DEFAULT 1,
+			seats_available int(11) DEFAULT NULL,
+			term_length varchar(255) DEFAULT NULL,
+			contested int(11) DEFAULT 1,
+			moreinfo text,
+			party varchar(100) DEFAULT NULL,
+			rank_value int(11) DEFAULT NULL);";
+		//##################################################################################################
+		echo "q: ".$q." -<br>";
+		$result = $mysqli->query($q);
+		if(!$result){
+			echo "failed to create table ".$contests." because of ".mysqli_error($mysqli)."<br>";
+			//return false;
+		}
+		else{
+			echo "successfully created <b>".$contests."</b> table!!<br>";
+		}
+	}
+
+	echo "creating new <b>".$candidates."</b> table for <b>".$newdbname."</b>...<br>";
+	if(checkForTable($newdbname, $candidates)){
+		echo "The <b>".$candidates."</b> table already exists, no need to recreate it...<br>";}
+	else{
+		//##################################################################################################
+		//$q = "big long string";
+		$q = "CREATE TABLE ".$candidates." (
+			id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+			name varchar(128) DEFAULT NULL,
+			contest_key int(11) DEFAULT NULL,
+			party varchar(128) DEFAULT NULL,
+			phone varchar(100) DEFAULT NULL,
+			email varchar(128) DEFAULT NULL,
+			website varchar(255) DEFAULT NULL,
+			twitter varchar(255) DEFAULT NULL,
+			facebook varchar(255) DEFAULT NULL,
+			instagram varchar(255) DEFAULT NULL,
+			youtube varchar(255) DEFAULT NULL,
+			photo varchar(255) DEFAULT NULL,
+			q1 text, a1 text,
+			q2 text, a2 text,
+			q3 text, a3 text,
+			q4 text, a4 text,
+			q5 text, a5 text,
+			q6 text, a6 text,
+			q7 text, a7 text,
+			q8 text, a8 text,
+			incumbent int(11) DEFAULT NULL,
+			contested int(11) DEFAULT NULL,
+			seat varchar(100) DEFAULT NULL,
+			zone_id int(11) DEFAULT NULL,
+			biography text);";
+		//##################################################################################################
+		echo "q: ".$q." -<br>";
+		$result = $mysqli->query($q);
+		if(!$result){
+			echo "failed to create table ".$candidates." because of ".mysqli_error($mysqli)."<br>";
+			//return false;
+		}
+		else{
+			echo "successfully created <b>".$candidates."</b> table!!<br>";
+		}
+	}
+
+	echo "Made it to the end of the createNewElection function...<br>";
+	return true;
+
+	//createDB
+	//createCandidatesTable
+	//createContestsTable
+	//createExternalLinksTable
+
+}
+		/*$q = "CREATE TABLE ".$contests." (
+			'id' int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+			'title' varchar(255) DEFAULT NULL,
+			'level' varchar(100) DEFAULT NULL,
+		'contest_group' varchar(100) DEFAULT NULL,
+		'contest_nickname' varchar(100) DEFAULT NULL,
+		'countywide' int(11) DEFAULT '1',
+		'seats_available' int(11) DEFAULT NULL,
+		'term_length' varchar(255) DEFAULT NULL,
+		'contested' int(11) DEFAULT '1',
+		'moreinfo' text,
+		'party' varchar(100) DEFAULT NULL,
+		'rank_value' int(11) DEFAULT NULL);";*/
+	/*$q = "CREATE TABLE ".$candidates." (
+		'id' int(11) NOT NULL AUTO INCREMENT PRIMARY KEY,
+		'name' varchar(128) DEFAULT NULL,
+		'contest_key' int(11) DEFAULT NULL,
+		'party' varchar(128) DEFAULT NULL,
+		'phone' varchar(100) DEFAULT NULL,
+		'email' varchar(128) DEFAULT NULL,
+		'website' varchar(255) DEFAULT NULL,
+		'twitter' varchar(255) DEFAULT NULL,
+		'facebook' varchar(255) DEFAULT NULL,
+		'instagram' varchar(255) DEFAULT NULL,
+		'youtube' varchar(255) DEFAULT NULL,
+		'photo' varchar(255) DEFAULT NULL,
+		'q1' text, 'a1' text,
+		'q2' text, 'a2' text,
+		'q3' text, 'a3' text,
+		'q4' text, 'a4' text,
+		'q5' text, 'a5' text,
+		'q6' text, 'a6' text,
+		'q7' text, 'a7' text,
+		'q8' text, 'a8' text,
+		'incumbent' int(11) DEFAULT NULL,
+		'contested' int(11) DEFAULT NULL,
+		'seat' varchar(100) DEFAULT NULL,
+		'zone_id' int(11) DEFAULT NULL,
+		'biography' text);";*/
+
 ?>

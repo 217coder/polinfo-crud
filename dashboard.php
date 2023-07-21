@@ -26,7 +26,7 @@ session_start();?>
 <div class="center">
 <?php
 bounce(); //confirm if logged in
-echo "It has to be the dashboard... ANOTHER ONE Welcome to the DashBoard<br>";
+echo "Welcome to the DashBoard<br>";
 $a = $_GET["action"];
 $item = $_GET["item"];
 setDashboardSessionVariables();
