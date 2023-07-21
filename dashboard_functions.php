@@ -1,6 +1,6 @@
 <?php
 include("basefunctions.php");
-$actionList = array("Logout", "ChangePassword", "CreateElection", "ManageElections", "GenerateRegistrationCode", "UserList", "CodeList");
+$actionList = array("Logout", "ChangePassword", "ElectionList", "CreateElection", "ManageElections", "GenerateRegistrationCode", "UserList", "CodeList");
 
 function setDashboardSessionVariables(){
 	//helps with managing the db & table we are on and looking at.
@@ -63,6 +63,9 @@ function handleAction($currentAction, $item){
 			$c = generateCode();
 			echo "Generated code: ".$c."<br>";
 			echo "use it wisely<br>";
+			break;
+		case "electionlist":
+			printElectionList();
 			break;
 		case "userlist":
 			printUserList();
@@ -136,6 +139,15 @@ function printUserList(){
 
 }
 
+function printElectionList(){
+	global $elections;
+	global $polinfo_db;
+	setSessionDBandTable($polinfo_db, $elections);
+	$fields = buildFields($polinfo_db, $elections);
+	echo "<center>";
+	printDBTable($polinfo_db, $elections, $fields);
+	echo "</center>";
+}
 function setSessionDBandTable($db, $table){
 //magic variable? put into a function to replicate/change easily throughout...?
 	$_SESSION["currentdb"]=$db;
