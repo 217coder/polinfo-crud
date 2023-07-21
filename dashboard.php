@@ -26,12 +26,12 @@ session_start();?>
 <div class="center">
 <?php
 bounce(); //confirm if logged in
-echo "Welcome to the DashBoard<br>";
+echo "Marketplace Welcome to the DashBoard<br>";
 $a = $_GET["action"];
 $item = $_GET["item"];
 setDashboardSessionVariables();
 printDashboardOptions($a);
-echo "<u>output & debug info:</U><br>";
+echo "<u>Output & Debug info:</U><br>";
 handleAction($a, $item);
 printAdditionalDebugInfo();
 echo "<br>test footer";

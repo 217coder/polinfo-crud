@@ -20,7 +20,14 @@ $dbuser = 'root';
 $polinfo_db = 'polinfo_coredata_2023';
 $users = 'users';//name of table for users
 $codes = 'codes';//name of table for codes
+$elections = 'elections';//name of table for election list
 $key = "id";//used for the key values of our tables, perhaps unnecessary?
+
+$tooltip_varchar = "'<b>varchar</b>' Can be a string of characters, like a word or sentance.";
+$tooltip_date = "'<b>date</b>' is formatted YYYY-MM-DD";
+$tooltip_int = "'<b>int</b>' is any number. No spaces or other characters.";
+$tooltip_text = "'<b>text</b>' can be a large block of text/words, typically larger than 'varchar'";
+$tooltip_array = array($tooltip_varchar, $tooltip_date, $tooltip_int, $tooltip_text);
 
 $mysqli = new mysqli($dbhost, $dbuser, $dbpass); //create sql connection
 if ($mysqli->connect_error) {
@@ -240,10 +247,10 @@ function printRow($row, $i, $tableFields, $admin){
 }
 function printEditForm($dbname, $table, $id){
         global $mysqli;
+	global $tooltip_array;
         $cleanID = mysqli_real_escape_string($mysqli, $id);
 	$table = mysqli_real_escape_string($mysqli, $table);
 	$dbname = mysqli_real_escape_string($mysqli, $dbname);
-
 
 	echo "Welcome to NewEdit home of the NewEdit may I take your order!!<br>";
 
@@ -264,27 +271,37 @@ function printEditForm($dbname, $table, $id){
 	else{
 		echo "<center><table>";
 		echo "<form action='?action=update&item=".$cleanID."' method='post'>";
+		echo "<tr><th>Column Name</th><th>Input Data</th><th>Data Type</th></tr>";
 
 		$data = mysqli_fetch_array($result);
 		foreach($superFields as $value){
 			$v = strtolower($value['COLUMN_NAME']);
 			$datatype = strtolower($value['DATA_TYPE']);
-			echo "<tr><td>".$v."</td><td>".$datatype."</td><td><textarea name='".$v."' cols=80 rows=1>".$data[$v]."</textarea></td></tr>";
+			echo "<tr><td>".$v."</td><td><textarea name='".$v."' cols=80 rows=1>".$data[$v]."</textarea></td><td>".$datatype."</td></tr>";
 		}
-		echo "<input type='submit' value='update'></form><br></table></center>";
+		echo "<input type='submit' value='update'></form><br></table>";
+		echo "<br><u>Datatype Tips:</u><br>";
+		foreach($tooltip_array as $tooltip){
+			echo $tooltip."<br>";
+		}
+		echo "<br>";
+		echo "</center>";
 	}
 }
 //form for adding a new entry
-function printEntryForm($superFields){
+function printEntryForm($db, $table, $fields, $superFields){
+	global $tooltip_array;
         global $defaultLevel, $defaultCountywide, $defaultSeats;
         global $candidateDefaultFields;
 
         echo "Start of New Entry Form<br>";
 
-        echo "<div class=\"search\">
-        <form action=\"\" method=\"post\">
-        <table>"; //start building entry form
-        echo '<tr><td>Confirmation Code</td><td>varchar</td><td><textarea name="confirm_add" cols="80" rows="1"></textarea></td</tr>';
+//        echo "<div class='entry'>";
+	echo "<center>";
+	echo "<form action='?action=addnew&item=".$table."' method='post'>";
+        echo "<table>"; //start building entry form
+	echo "<tr><th>Column Name</th><th>Input Data</th><th>Data Type</th></tr>";
+        echo "<tr><td>Confirmation Code</td><td><textarea name='confirm_add' cols='80' rows='1'></textarea></td><td>varchar</td></tr>";
 
         $c = count($superFields); //print all the $fields
         for($i=0;$i<$c;$i++){
@@ -294,7 +311,7 @@ function printEntryForm($superFields){
                 ///////----really ugly manual defaults-----//////
                 /////////////////////////////////////////////////
                 if($v!="id"){
-                        echo '<tr><td>'.$v.'</td><td>'.$datatype.'</td><td><textarea name="'.$v.'" cols="80" rows="1">';
+                        echo '<tr><td>'.$v.'</td><td><textarea name="'.$v.'" cols="80" rows="1">';
                         if($v=="level"){
                                 echo $defaultLevel;
                         }
@@ -304,18 +321,33 @@ function printEntryForm($superFields){
                         else if($v=="seats_available"){
                                 echo $defaultSeats;
                         }
-                        echo '</textarea></td></tr>';
+                        echo '</textarea></td><td>'.$datatype.'</td></tr>';
                 }
         }
         //finish form
-        echo "<tr><td></td><td></td><td><input type=\"submit\" value=\"Add!\"></td></tr>
-        </table>
-        </form>
-        </div>";
+        echo "<tr><td></td><td><input type='submit' value='Add!'></td><td></td></tr>";
+	echo "</table></form><br>";
+//	echo "</div>";
+	echo "<u>Datatype Tips:</u><br>";
+	foreach($tooltip_array as $tooltip){
+		echo $tooltip."<br>";
+	}
+
+	echo "<br>";
+	echo "</center>";
+
 }
-//add entry (from form) into database
-function addEntry($table, $tableFields){
+//add entry (from form) into database // gets data from $_POST
+function addEntry($dbname, $table, $tableFields){
         global $mysqli; //pull in globals
+
+	$db = mysqli_real_escape_string($mysqli, $dbname);
+	$table = mysqli_real_escape_string($mysqli, $table);
+
+	if(!mysqli_select_db($mysqli, $dbname)){
+		echo "AddEntry: error connecting to db: ".$db." because: ".mysqli_error($mysqli)."<br>";
+		return false;
+	}
 
         $query = "INSERT INTO ".$table." (";//start query
 
@@ -345,7 +377,11 @@ function addEntry($table, $tableFields){
 
         if(!$mysqli->query($query)){//insert and test for error
                 echo "there was a VERY critical error...".mysqli_error();
+		return false;
         }
+	else{
+		return true;
+	}
 
 }
 //UpdateEntry, almost a copy of addEntry
@@ -751,6 +787,83 @@ function checkPasswordStrength($password){
 		</tr></table>';
 }*/
 
+//form for adding a new entry
+/*
+function OLDprintEntryForm($superFields){
+        global $defaultLevel, $defaultCountywide, $defaultSeats;
+        global $candidateDefaultFields;
 
+        echo "Start of New Entry Form<br>";
+
+        echo "<div class=\"search\">
+        <form action=\"\" method=\"post\">
+        <table>"; //start building entry form
+        echo '<tr><td>Confirmation Code</td><td>varchar</td><td><textarea name="confirm_add" cols="80" rows="1"></textarea></td</tr>';
+
+        $c = count($superFields); //print all the $fields
+        for($i=0;$i<$c;$i++){
+                $v = strtolower($superFields[$i]['COLUMN_NAME']);
+                $datatype = strtolower($superFields[$i]['DATA_TYPE']);
+                /////////////////////////////////////////////////
+                ///////----really ugly manual defaults-----//////
+                /////////////////////////////////////////////////
+                if($v!="id"){
+                        echo '<tr><td>'.$v.'</td><td>'.$datatype.'</td><td><textarea name="'.$v.'" cols="80" rows="1">';
+                        if($v=="level"){
+                                echo $defaultLevel;
+                        }
+                        else if($v=="countywide"){
+                                echo $defaultCountywide;
+                        }
+                        else if($v=="seats_available"){
+                                echo $defaultSeats;
+                        }
+                        echo '</textarea></td></tr>';
+                }
+        }
+        //finish form
+        echo "<tr><td></td><td></td><td><input type=\"submit\" value=\"Add!\"></td></tr>
+        </table>
+        </form>
+        </div>";
+}
+*/
+/*
+//add entry (from form) into database // gets data from $_POST
+function OLDaddEntry($dbname, $table, $tableFields){
+        global $mysqli; //pull in globals
+
+        $query = "INSERT INTO ".$table." (";//start query
+
+        $c = count($tableFields);
+        for($i=0;$i<$c;$i++){ //read in fields to update
+                $f = $tableFields[$i];
+                $query = $query.$f;
+                if($i!=$c-1) //dont add a comma on the last one
+                        $query = $query.", ";
+        }
+        $query = $query.") VALUES ("; //half-way done
+        for($i=0;$i<$c;$i++){ //read in fields & values to update
+                $f = $tableFields[$i];
+                $v = mysqli_real_escape_string($mysqli, $_POST[$f]); //no inject pls
+
+                if($v==NULL){ //NULL values create problems if they aren't handled right.
+                        echo "f-".$f."-v is BNULnul.";
+                        $query = $query."NULL";}
+                else{
+                        $query = $query."'".$v."'"; }
+
+                if($i!=$c-1) //dont add a comma on the last one
+                        $query = $query.", ";
+        }
+        $query = $query.");";//cap it off
+        echo "q-".$query."-q";//print for fun
+
+        if(!$mysqli->query($query)){//insert and test for error
+                echo "there was a VERY critical error...".mysqli_error();
+        }
+
+}
+*/
 ?>
 

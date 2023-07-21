@@ -16,8 +16,11 @@ function printAdditionalDebugInfo(){
 	$table = $_SESSION["currentdbtable"];
 	$action = $_GET["action"];
 	$item = $_GET["item"];
+	$election = $_GET["currentlyelection"];
+	echo "<br><U>Additional Debug Info:</u><br>";
 	echo "db: <b>".$db."</b> dbTable: <b>".$table."</b><br>";
 	echo "action: <b>".$action."</b> item: <b>".$item."</b><br>";
+	echo "current_election: <b>".$election."</b></br>";
 }
 
 function printDashboardOptions($currentAction){
@@ -34,36 +37,46 @@ function printDashboardOptions($currentAction){
 }
 
 function handleAction($currentAction, $item){
+	$currentAction = strtolower($currentAction);
+
 	switch($currentAction){
-		case "Logout":
+		case "logout":
 			logout();
 			break;
-		case "ChangePassword":
+		case "changepassword":
 			updatePasswordForm();
 			break;
-		case "CreateElection":
+		case "createelection":
 			echo "Create Election code";
-			//prepCreateElectionForm(); //prep the variables for the new election db
+			prepCreateElectionForm(); //prep the variables for the new election db
 			break;
-		case "ManageElections":
-			echo "Manage Elections code";
-			//printManageElectionMenu(); //print info for managing the different elections in the db
+		case "changeelection":
+			echo "Changing to new election db...";
+			changeElection($item);
 			break;
-		case "GenerateRegistrationCode":
+		case "manageelections":
+			echo "Manage Elections code<br>";
+			printListOfElections($item);
+//			printManageElectionMenu(); //print info for managing the different elections in the db
+			break;
+		case "generateregistrationcode":
 			$c = generateCode();
 			echo "Generated code: ".$c."<br>";
 			echo "use it wisely<br>";
 			break;
-		case "UserList":
-			echo "put code here to print out a users list<br>";
+		case "userlist":
 			printUserList();
 			break;
-		case "CodeList":
+		case "codelist":
 			printCodeList();
 			break;
 		case "edit":
 			echo "print an edit form for the item selected...<br>";
 			prepEditForm($item); //prep the variables for the edit form, and then call it.
+			break;
+		case "addnew":
+			echo "adding new entry...<br>";
+			prepAddNew($item);
 			break;
 		case "update":
 			echo "update a variable...<br>";
@@ -128,6 +141,9 @@ function setSessionDBandTable($db, $table){
 	$_SESSION["currentdb"]=$db;
 	$_SESSION["currentdbtable"]=$table;
 }
+function setCurrentElection($input){
+	$_SESSION["currentelection"]=$input;
+}
 function prepEditForm($item){
 	$db=$_SESSION["currentdb"];
 	$table=$_SESSION["currentdbtable"];
@@ -151,6 +167,24 @@ function prepUpdateEntry($item){
 		echo "<center>";
 		printDBTable($db, $table, buildFields($db, $table));
 		echo "</center>";
+	}
+}
+function prepAddNew($item){
+	$db=$_SESSION["currentdb"];
+	$table=$_SESSION["currentdbtable"];
+	if($db==NULL || $table==NULL){
+		echo "Missing db or table, can not add new entry....<br>"; }
+	else if($item==$table){
+		echo "adding... <br>";
+		$fields = buildFields($db, $table);
+		addEntry($db, $table, $fields);
+		echo "<br>done!<br>";
+		echo "<center>";
+		printDBTable($db, $table, $fields);
+		echo "</center>";
+	}
+	else{
+		echo "something went wrong...<br>";
 	}
 }
 function printDeleteConfirmation($item){
@@ -201,9 +235,70 @@ function deleteForSure($item){
 }
 
 function prepCreateElectionForm(){
-	//get variables ready for new election create form
+	global $elections;
+	global $mysqli;
+	global $polinfo_db;
 
+	setSessionDBandTable($polinfo_db, $elections);
+	//get variables ready for new election create form
+//	echo "prep form for election creation<br>;"
 	//print election table
+	$fields = buildSuperFields($polinfo_db, $elections);
+	printEntryForm($polinfo_db, $elections, $fields, $fields);
 }
 
+function printManageElectionMenu(){
+	echo "this is the temporary election menu<br>.";
+	//printListOfElections();
+	//other stuff
+}
+
+function printListOfElections($item){
+	global $elections;
+	global $mysqli;
+	global $polinfo_db;
+
+	$q = "SELECT * FROM ".$elections.";";
+
+	if(!mysqli_select_db($mysqli, $polinfo_db)){
+		die("PrintListofElections: error switching to db ".$polinfo_db." because: ".mysqli_error($mysqli));
+	}
+	$result = $mysqli->query($q);
+	if(!$result){
+		die("PrintListofElections: error running query ".$q." because: ".mysqli_error($mysqli));
+	}
+	else if($result->num_rows<1){
+		echo "It looks like there are no elections in the <b>".$elections."</b> table, would you like to <a href='?action=createelection'>Create new Election?</a><br>";
+	}
+	while($row = mysqli_fetch_array($result)){
+		$d = $row['db_name'];
+		if(!$d){
+			echo "oddly there is no db_name....<br>";}
+		else if($d == $item){
+			echo "<b>[".$d."]</b><br>"; }
+		else{
+			echo "<a href='?action=changeelection&item=".$d."'>[".$d."]</a>";
+		}
+	}
+}
+function changeElection($item){
+	global $mysqli;
+	global $polinfo_db;
+	global $elections;
+	$new_election = mysqli_real_escape_string($item);
+
+	if(!isValueInTable($new_election, "db_name", $elections, $polinfo_db)){
+		echo "I'm not sure that <b>".$new_election."</b> has been created yet... <br>";
+	}
+	else{
+		setCurrentElection($new_election);
+
+		if(!mysqli_select_db($mysqli, $election)){
+			die("ChangeElection: error switching to db ".$polinfo_db." because: ".mysqli_error($mysqli));
+		}
+
+		echo "looks like everything worked...!<br>";
+	}
+
+}
 ?>
