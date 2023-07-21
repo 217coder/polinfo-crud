@@ -17,14 +17,18 @@ function printAdditionalDebugInfo(){
 	$action = $_GET["action"];
 	$item = $_GET["item"];
 	$election = $_GET["currentlyelection"];
+
+	echo "<div class='debug_info'>";
 	echo "<br><U>Additional Debug Info:</u><br>";
 	echo "db: <b>".$db."</b> dbTable: <b>".$table."</b><br>";
 	echo "action: <b>".$action."</b> item: <b>".$item."</b><br>";
 	echo "current_election: <b>".$election."</b></br>";
+	echo "</div>";
 }
 
 function printDashboardOptions($currentAction){
 	global $actionList;
+	echo "<div class='dashboard_menu'>";
 	echo "<center>";
 	foreach($actionList as $action){
 		if($currentAction==$action){
@@ -33,7 +37,7 @@ function printDashboardOptions($currentAction){
 			echo '<a href="?action='.$action.'">['.$action.']</a><br>';}
 	}
 	echo "</center>";
-
+	echo "</div>";
 }
 
 function handleAction($currentAction, $item){
@@ -104,6 +108,7 @@ function updatePasswordForm(){
 	$newPW = $_POST["newpw"];
 	$confirmPW = $_POST["confirmnewpw"];
 
+	echo "<div class='update_password_form'>";
 	echo "New password needs to be more than 6 characters and less than 50 characters.<br>";
 	if(!updatePassword($currentPW, $newPW, $confirmPW)){
 		echo "<br>";
@@ -116,6 +121,7 @@ function updatePasswordForm(){
 	else{
 		echo "everything worked?...<br>";
 	}
+	echo "</div>";
 }
 
 function printCodeList(){
@@ -225,6 +231,7 @@ function printDeleteConfirmation($item){
 	if($db==NULL || $table==NULL){
 		echo "not all variables are preseant to delete...<br>"; }
 	else{
+		echo "<div class='delete_confirmation'>";
 		if(!bounceAdmin()){
 			echo "You do not have a high enough user_access level to do deletion. Please check with admin.<br>";
 		}
@@ -246,7 +253,7 @@ function printDeleteConfirmation($item){
 			echo "<textarea name='confirmation' cols=80 rows=1></textarea><br>";
 			echo "<input type='submit' value='DELETE'></form></center>";
 		}
-
+		echo "</div>";
 		echo "<br><br><center>";
 		printDBTable($db, $table, buildFields($db, $table));
 		echo "</center>";
@@ -294,7 +301,7 @@ function deleteForSure($item){
 				echo "End of block...<br>";
 			}
 		}
-		else{ //it's a normal row in a table to delte
+		else{ //it's a normal row in a table to delte, it's not a full election database
 			$confirmation = $_POST["confirmation"];
 			if(!($confirmation=="I am sure")){
 				echo "Your confirmation (".$confirmation.") did not match what was required. Please try again.<br>";
@@ -307,9 +314,6 @@ function deleteForSure($item){
 		}
 	}
 }
-function deleteElectionDatabase($dbname){
-
-}
 function prepCreateElectionForm(){
 	global $elections;
 	global $mysqli;
@@ -320,8 +324,6 @@ function prepCreateElectionForm(){
 		return false;
 	}
 	setSessionDBandTable($polinfo_db, $elections);
-	//get variables ready for new election create form
-//	echo "prep form for election creation<br>;"
 	//print election table
 	$fields = buildSuperFields($polinfo_db, $elections);
 	printEntryForm($polinfo_db, $elections, $fields, $fields);
@@ -338,8 +340,9 @@ function printListOfElections($item){
 	global $mysqli;
 	global $polinfo_db;
 
-	$q = "SELECT * FROM ".$elections.";";
+	echo "<div class='election_list_menu'>";
 
+	$q = "SELECT * FROM ".$elections.";";
 	if(!mysqli_select_db($mysqli, $polinfo_db)){
 		die("PrintListofElections: error switching to db ".$polinfo_db." because: ".mysqli_error($mysqli));
 	}
@@ -360,6 +363,7 @@ function printListOfElections($item){
 			echo "<a href='?action=changeelection&item=".$d."'>[".$d."]</a>";
 		}
 	}
+	echo "</div>";
 }
 function changeElection($item){
 	global $mysqli;
@@ -492,44 +496,4 @@ function buildNewElectionDB($newdbname){
 	//createExternalLinksTable
 
 }
-		/*$q = "CREATE TABLE ".$contests." (
-			'id' int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-			'title' varchar(255) DEFAULT NULL,
-			'level' varchar(100) DEFAULT NULL,
-		'contest_group' varchar(100) DEFAULT NULL,
-		'contest_nickname' varchar(100) DEFAULT NULL,
-		'countywide' int(11) DEFAULT '1',
-		'seats_available' int(11) DEFAULT NULL,
-		'term_length' varchar(255) DEFAULT NULL,
-		'contested' int(11) DEFAULT '1',
-		'moreinfo' text,
-		'party' varchar(100) DEFAULT NULL,
-		'rank_value' int(11) DEFAULT NULL);";*/
-	/*$q = "CREATE TABLE ".$candidates." (
-		'id' int(11) NOT NULL AUTO INCREMENT PRIMARY KEY,
-		'name' varchar(128) DEFAULT NULL,
-		'contest_key' int(11) DEFAULT NULL,
-		'party' varchar(128) DEFAULT NULL,
-		'phone' varchar(100) DEFAULT NULL,
-		'email' varchar(128) DEFAULT NULL,
-		'website' varchar(255) DEFAULT NULL,
-		'twitter' varchar(255) DEFAULT NULL,
-		'facebook' varchar(255) DEFAULT NULL,
-		'instagram' varchar(255) DEFAULT NULL,
-		'youtube' varchar(255) DEFAULT NULL,
-		'photo' varchar(255) DEFAULT NULL,
-		'q1' text, 'a1' text,
-		'q2' text, 'a2' text,
-		'q3' text, 'a3' text,
-		'q4' text, 'a4' text,
-		'q5' text, 'a5' text,
-		'q6' text, 'a6' text,
-		'q7' text, 'a7' text,
-		'q8' text, 'a8' text,
-		'incumbent' int(11) DEFAULT NULL,
-		'contested' int(11) DEFAULT NULL,
-		'seat' varchar(100) DEFAULT NULL,
-		'zone_id' int(11) DEFAULT NULL,
-		'biography' text);";*/
-
 ?>

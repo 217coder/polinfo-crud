@@ -1,6 +1,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html>
+<html lang="en">
 <head>
 <?php
 //########################################################################################
@@ -19,8 +19,13 @@
 //include("basefunctions.php");
 include("dashboard_functions.php");
 session_start();?>
-<link rel="stylesheet" type="text/css" href="game.css"/>
-<title>The GAME</title>
+<link rel="stylesheet" type="text/css" href="polinfo.css"/>
+<title>Dashboard - POLINFO</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+</style>
+<script src=""></script>
 </head>
 <body>
 <div class="center">

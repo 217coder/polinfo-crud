@@ -89,13 +89,15 @@ function printDBTable($db, $table, $tableFields){
 	        if($query = $mysqli->query("SELECT * FROM ".$table.";")){ //build an sql $query
 		        $totalRows = $query->num_rows; //get a row count
 
-		        printTableHead($tableFields, $admin);
+			echo "<div class='db_table'>";
+			printTableHead($tableFields, $admin);
 
 		        for($i=0; $i<$totalRows; $i++){ //print each row
 		                $row = mysqli_fetch_array($query);
 				printRow($row, $i, $tableFields, $admin);
 	       		}
 		        echo "</table>"; //close out table
+			echo "<div>";
 		}
 		else{
 			die('there was an error with printing table...:'.$mysqli->error);
@@ -252,11 +254,8 @@ function printEditForm($dbname, $table, $id){
 	$table = mysqli_real_escape_string($mysqli, $table);
 	$dbname = mysqli_real_escape_string($mysqli, $dbname);
 
-	echo "Welcome to NewEdit home of the NewEdit may I take your order!!<br>";
-
         $q="SELECT * FROM ".$table." WHERE id=".$cleanID.";";
         echo 'q: '.$q.'<br><br>';
-
 
 	if(!mysqli_select_db($mysqli, $dbname)){
 		die("Edit Form: There was an error switching the db to ".$dbname." because of: ".mysqli_error($mysqli));
@@ -269,6 +268,7 @@ function printEditForm($dbname, $table, $id){
 	if(!$result){
 		echo "Something went wrong with the query for the EditForm...<br>";}
 	else{
+		echo "<div class='edit_form'>";
 		echo "<center><table>";
 		echo "<form action='?action=update&item=".$cleanID."' method='post'>";
 		echo "<tr><th>Column Name</th><th>Input Data</th><th>Data Type</th></tr>";
@@ -286,6 +286,7 @@ function printEditForm($dbname, $table, $id){
 		}
 		echo "<br>";
 		echo "</center>";
+		echo "</div>";
 	}
 }
 //form for adding a new entry
@@ -294,9 +295,8 @@ function printEntryForm($db, $table, $fields, $superFields){
         global $defaultLevel, $defaultCountywide, $defaultSeats;
         global $candidateDefaultFields;
 
+        echo "<div class='new_entry_form'>";
         echo "Start of New Entry Form<br>";
-
-//        echo "<div class='entry'>";
 	echo "<center>";
 	echo "<form action='?action=addnew&item=".$table."' method='post'>";
         echo "<table>"; //start building entry form
@@ -327,12 +327,13 @@ function printEntryForm($db, $table, $fields, $superFields){
         //finish form
         echo "<tr><td></td><td><input type='submit' value='Add!'></td><td></td></tr>";
 	echo "</table></form><br>";
-//	echo "</div>";
+	echo "</div>";
+        echo "<div class='datatype_tips'>";
 	echo "<u>Datatype Tips:</u><br>";
 	foreach($tooltip_array as $tooltip){
 		echo $tooltip."<br>";
 	}
-
+	echo "</div>";
 	echo "<br>";
 	echo "</center>";
 
