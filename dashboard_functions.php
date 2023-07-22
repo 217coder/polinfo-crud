@@ -1,4 +1,21 @@
 <?php
+//########################################################################################
+//########################################################################################
+//## Author: James Manrique                           ####################################
+//## File: dashboard_functions.php                    ####################################
+//## Project: POLINFO                                 ####################################
+//## License: AGPL3.0                                 ####################################
+//## GitHub: https://github.com/217coder/polinfo-crud ####################################
+//## Description: These functions are used to create  ####################################
+//## a dashboard for the Admin/Staff of POLINFO. Many ####################################
+//## of these functions fall under CRUD - Create,     ####################################
+//## Read, Update, Delete. But there are also custom- ####################################
+//## crafted functions that help create ElectionDBs & ####################################
+//## such. These functions also interface with        ####################################
+//## basefunctions.php.				      ####################################
+//########################################################################################
+//########################################################################################
+
 include("basefunctions.php");
 $actionList = array("Logout", "ChangePassword", "ElectionList", "CreateElection", "ManageElections", "GenerateRegistrationCode", "UserList", "CodeList");
 
@@ -18,26 +35,28 @@ function printAdditionalDebugInfo(){
 	$item = $_GET["item"];
 	$election = $_GET["currentlyelection"];
 
-	echo "<div class='debug_info'>";
-	echo "<br><U>Additional Debug Info:</u><br>";
-	echo "db: <b>".$db."</b> dbTable: <b>".$table."</b><br>";
+	//echo "<div class='debug_info'>";
+	echo "<div class='w3-countainer w3-blue-grey'>";
+	echo "<h2><U>Additional Debug Info:</u></h2>";
+	echo "<p>db: <b>".$db."</b> dbTable: <b>".$table."</b><br>";
 	echo "action: <b>".$action."</b> item: <b>".$item."</b><br>";
-	echo "current_election: <b>".$election."</b></br>";
+	echo "current_election: <b>".$election."</b></p>";
 	echo "</div>";
 }
 
 function printDashboardOptions($currentAction){
 	global $actionList;
-	echo "<div class='dashboard_menu'>";
-	echo "<center>";
+	//echo "<div class='dashboard_menu'>";
+	echo "<div class='w3-bar w3-light-grey' style='width:100%'>";
+	//echo "<ul class='w3-ul w3-center w3-hoverable' style='width:50%'>";
 	foreach($actionList as $action){
 		if($currentAction==$action){
-			echo '<b><a href="?action='.$action.'">['.$action.']</a></b><br>';}
+			echo "<b><a href='?action=".$action."' class='w3-bar-item w3-button w3-grey w3-mobile'>[".$action."]</a></b>";}
 		else{
-			echo '<a href="?action='.$action.'">['.$action.']</a><br>';}
+			echo "<a href='?action=".$action."' class='w3-bar-item w3-button w3-mobile'>[".$action."]</a>";}
 	}
-	echo "</center>";
 	echo "</div>";
+
 }
 
 function handleAction($currentAction, $item){
@@ -51,15 +70,15 @@ function handleAction($currentAction, $item){
 			updatePasswordForm();
 			break;
 		case "createelection":
-			echo "Create Election code";
+			//echo "Create Election code";
 			prepCreateElectionForm(); //prep the variables for the new election db
 			break;
 		case "changeelection":
-			echo "Changing to new election db...";
+			//echo "Changing to new election db...";
 			changeElection($item);
 			break;
 		case "manageelections":
-			echo "Manage Elections code<br>";
+			//echo "Manage Elections code<br>";
 			printListOfElections($item);
 //			printManageElectionMenu(); //print info for managing the different elections in the db
 			break;
@@ -78,23 +97,23 @@ function handleAction($currentAction, $item){
 			printCodeList();
 			break;
 		case "edit":
-			echo "print an edit form for the item selected...<br>";
+			//echo "print an edit form for the item selected...<br>";
 			prepEditForm($item); //prep the variables for the edit form, and then call it.
 			break;
 		case "addnew":
-			echo "adding new entry...<br>";
+			//echo "adding new entry...<br>";
 			prepAddNew($item);
 			break;
 		case "update":
-			echo "update a variable...<br>";
+			//echo "update a variable...<br>";
 			prepUpdateEntry($item); //prep the variable for the updateEntry() function
 			break;
 		case "delete":
-			echo "Print a delete form for the item selected...<br>";
+			//echo "Print a delete form for the item selected...<br>";
 			printDeleteConfirmation($item);
 			break;
 		case "confirmdelete":
-			echo "Print txt to confirm delete...<br>";
+			//echo "Print txt to confirm delete...<br>";
 			deleteForSure($item);
 			break;
 		default:

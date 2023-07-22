@@ -20,6 +20,7 @@
 include("dashboard_functions.php");
 session_start();?>
 <link rel="stylesheet" type="text/css" href="polinfo.css"/>
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
 <title>Dashboard - POLINFO</title>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -31,12 +32,14 @@ session_start();?>
 <div class="center">
 <?php
 bounce(); //confirm if logged in
-echo "Welcome to the DashBoard<br>";
+echo "<div class='w3-countainer w3-amber'>";
+echo "<h1>Welcome to the DashBoard</h1>";
+echo "</div>";
 $a = $_GET["action"];
 $item = $_GET["item"];
 setDashboardSessionVariables();
 printDashboardOptions($a);
-echo "<u>Output & Debug info:</U><br>";
+//echo "<u>Output & Debug info:</U><br>";
 handleAction($a, $item);
 printAdditionalDebugInfo();
 echo "<br>test footer";

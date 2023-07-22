@@ -89,7 +89,8 @@ function printDBTable($db, $table, $tableFields){
 	        if($query = $mysqli->query("SELECT * FROM ".$table.";")){ //build an sql $query
 		        $totalRows = $query->num_rows; //get a row count
 
-			echo "<div class='db_table'>";
+			//echo "<div class='db_table'>";
+			echo "<div class='w3-light-blue'>";
 			printTableHead($tableFields, $admin);
 
 		        for($i=0; $i<$totalRows; $i++){ //print each row
@@ -206,8 +207,8 @@ function buildFields($db, $table){
         return $newFieldList;
 }
 function printTableHead($tableFields, $admin){
-        echo "<table><tr>"; //begin printing html
-
+        echo "<table class='w3-table w3-striped w3-centered'>";
+	echo "<tr>"; //begin printing html
         echo "<th>Edit</th>";
 	if($admin){
 		echo "<th>Delete</th>";}
@@ -295,14 +296,16 @@ function printEntryForm($db, $table, $fields, $superFields){
         global $defaultLevel, $defaultCountywide, $defaultSeats;
         global $candidateDefaultFields;
 
-        echo "<div class='new_entry_form'>";
-        echo "Start of New Entry Form<br>";
-	echo "<center>";
-	echo "<form action='?action=addnew&item=".$table."' method='post'>";
-        echo "<table>"; //start building entry form
-	echo "<tr><th>Column Name</th><th>Input Data</th><th>Data Type</th></tr>";
-        echo "<tr><td>Confirmation Code</td><td><textarea name='confirm_add' cols='80' rows='1'></textarea></td><td>varchar</td></tr>";
-
+	//echo "<div class='new_entry_form'>";
+	echo "<div class='w3-container w3-light-blue w3-center w3-padding' style='width:70%'>";
+        echo "<h2 class='w3-center w3-amber'>Start of New Entry Form</h2>";
+	//echo "<center>";
+	echo "<form action='?action=addnew&item=".$table."' method='post' class='w3-container'>";
+        echo "<table class='w3-table'>"; //start building entry form
+	echo "<tr class='w3-blue-grey'><th class='w3-right-align'>Column Name</th><th class='w3-center'>Input Data</th><th>Data Type</th></tr>";
+        //echo "<tr><td>Confirmation Code</td><td><textarea name='confirm_add' cols='80' rows='1'></textarea></td><td>varchar</td></tr>";
+        //echo "<tr><td>Confirmation Code</td><td><textarea name='confirm_add'></textarea></td><td>varchar</td></tr>";
+	echo "<tr><td class='w3-right-align'>Confirmation Code</td><td><input class='w3-input' type='text'></td><td>varchar</td></tr>";
         $c = count($superFields); //print all the $fields
         for($i=0;$i<$c;$i++){
                 $v = strtolower($superFields[$i]['COLUMN_NAME']);
@@ -311,7 +314,8 @@ function printEntryForm($db, $table, $fields, $superFields){
                 ///////----really ugly manual defaults-----//////
                 /////////////////////////////////////////////////
                 if($v!="id"){
-                        echo '<tr><td>'.$v.'</td><td><textarea name="'.$v.'" cols="80" rows="1">';
+                        //echo '<tr><td>'.$v.'</td><td><textarea name="'.$v.'" cols="80" rows="1">';
+                        echo "<tr><td class='w3-right-align'>".$v."</td><td><input class='w3-input' type='text' value='";
                         if($v=="level"){
                                 echo $defaultLevel;
                         }
@@ -321,21 +325,21 @@ function printEntryForm($db, $table, $fields, $superFields){
                         else if($v=="seats_available"){
                                 echo $defaultSeats;
                         }
-                        echo '</textarea></td><td>'.$datatype.'</td></tr>';
+                        echo "'></td><td>".$datatype."</td></tr>";
                 }
         }
         //finish form
-        echo "<tr><td></td><td><input type='submit' value='Add!'></td><td></td></tr>";
+        echo "<tr><td></td><td><input class='w3-button w3-red w3-cenetered' type='submit' value='Add!'></td><td></td></tr>";
 	echo "</table></form><br>";
 	echo "</div>";
-        echo "<div class='datatype_tips'>";
-	echo "<u>Datatype Tips:</u><br>";
+        //echo "<div class='datatype_tips'>";
+	echo "<div class='w3-container w3-border w3-centered'><h2>Datatype Tips:</h2>";
 	foreach($tooltip_array as $tooltip){
-		echo $tooltip."<br>";
+		echo "<p>".$tooltip."</p>";
 	}
 	echo "</div>";
 	echo "<br>";
-	echo "</center>";
+	//echo "</center>";
 
 }
 //add entry (from form) into database // gets data from $_POST
@@ -777,94 +781,5 @@ function checkPasswordStrength($password){
 	echo "</table>";
 }*/
 
-/*function printNavBar(){
-	echo '<table>
-		<th><a href="myaccount.php">'.$_SESSION["username"].'</a></th>
-		<tr class="cent">
-		<th><a href="userlist.php">Users</a></th>
-		<th><a href="skrbs.php">skrbs</a></th>
-		<th><a href="mainmenu.php">Game</a></th>
-		<th><a href="logout.php">Logout</a></th>
-		</tr></table>';
-}*/
-
-//form for adding a new entry
-/*
-function OLDprintEntryForm($superFields){
-        global $defaultLevel, $defaultCountywide, $defaultSeats;
-        global $candidateDefaultFields;
-
-        echo "Start of New Entry Form<br>";
-
-        echo "<div class=\"search\">
-        <form action=\"\" method=\"post\">
-        <table>"; //start building entry form
-        echo '<tr><td>Confirmation Code</td><td>varchar</td><td><textarea name="confirm_add" cols="80" rows="1"></textarea></td</tr>';
-
-        $c = count($superFields); //print all the $fields
-        for($i=0;$i<$c;$i++){
-                $v = strtolower($superFields[$i]['COLUMN_NAME']);
-                $datatype = strtolower($superFields[$i]['DATA_TYPE']);
-                /////////////////////////////////////////////////
-                ///////----really ugly manual defaults-----//////
-                /////////////////////////////////////////////////
-                if($v!="id"){
-                        echo '<tr><td>'.$v.'</td><td>'.$datatype.'</td><td><textarea name="'.$v.'" cols="80" rows="1">';
-                        if($v=="level"){
-                                echo $defaultLevel;
-                        }
-                        else if($v=="countywide"){
-                                echo $defaultCountywide;
-                        }
-                        else if($v=="seats_available"){
-                                echo $defaultSeats;
-                        }
-                        echo '</textarea></td></tr>';
-                }
-        }
-        //finish form
-        echo "<tr><td></td><td></td><td><input type=\"submit\" value=\"Add!\"></td></tr>
-        </table>
-        </form>
-        </div>";
-}
-*/
-/*
-//add entry (from form) into database // gets data from $_POST
-function OLDaddEntry($dbname, $table, $tableFields){
-        global $mysqli; //pull in globals
-
-        $query = "INSERT INTO ".$table." (";//start query
-
-        $c = count($tableFields);
-        for($i=0;$i<$c;$i++){ //read in fields to update
-                $f = $tableFields[$i];
-                $query = $query.$f;
-                if($i!=$c-1) //dont add a comma on the last one
-                        $query = $query.", ";
-        }
-        $query = $query.") VALUES ("; //half-way done
-        for($i=0;$i<$c;$i++){ //read in fields & values to update
-                $f = $tableFields[$i];
-                $v = mysqli_real_escape_string($mysqli, $_POST[$f]); //no inject pls
-
-                if($v==NULL){ //NULL values create problems if they aren't handled right.
-                        echo "f-".$f."-v is BNULnul.";
-                        $query = $query."NULL";}
-                else{
-                        $query = $query."'".$v."'"; }
-
-                if($i!=$c-1) //dont add a comma on the last one
-                        $query = $query.", ";
-        }
-        $query = $query.");";//cap it off
-        echo "q-".$query."-q";//print for fun
-
-        if(!$mysqli->query($query)){//insert and test for error
-                echo "there was a VERY critical error...".mysqli_error();
-        }
-
-}
-*/
 ?>
 
