@@ -45,7 +45,7 @@ $candidateDefaultFields =  array("name","party","phone","email","website","twitt
 //the $tables we want to be able to switch between - THESE ARE ENTERED BY HAND
 //"basicinfo" is obsolete at the moment
 //$table_set = array("basicinfo","candidates","contests","externallinks");
-$table_set = array("candidates","contests","externallinks");
+$table_set = array("candidates","contests");
 
 $defaultLevel = "county";
 $defaultCountywide = "0";
@@ -315,7 +315,7 @@ function printEntryForm($db, $table, $fields, $superFields){
                 /////////////////////////////////////////////////
                 if($v!="id"){
                         //echo '<tr><td>'.$v.'</td><td><textarea name="'.$v.'" cols="80" rows="1">';
-                        echo "<tr><td class='w3-right-align'>".$v."</td><td><input class='w3-input' type='text' value='";
+                        echo "<tr><td class='w3-right-align'>".$v."</td><td><input class='w3-input' name='".$v."' type='text' value='";
                         if($v=="level"){
                                 echo $defaultLevel;
                         }
@@ -329,7 +329,7 @@ function printEntryForm($db, $table, $fields, $superFields){
                 }
         }
         //finish form
-        echo "<tr><td></td><td><input class='w3-button w3-red w3-cenetered' type='submit' value='Add!'></td><td></td></tr>";
+        echo "<tr><td></td><td><input class='w3-button w3-red w3-cenetered' type='submit' value='Add!!!'></td><td></td></tr>";
 	echo "</table></form><br>";
 	echo "</div>";
         //echo "<div class='datatype_tips'>";
@@ -349,7 +349,7 @@ function addEntry($dbname, $table, $tableFields){
 	$db = mysqli_real_escape_string($mysqli, $dbname);
 	$table = mysqli_real_escape_string($mysqli, $table);
 
-	if(!mysqli_select_db($mysqli, $dbname)){
+	if(!mysqli_select_db($mysqli, $db)){
 		echo "AddEntry: error connecting to db: ".$db." because: ".mysqli_error($mysqli)."<br>";
 		return false;
 	}

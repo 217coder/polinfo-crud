@@ -17,7 +17,6 @@
 //########################################################################################
 
 include("basefunctions.php");
-$actionList = array("Logout", "ChangePassword", "ElectionList", "CreateElection", "ManageElections", "GenerateRegistrationCode", "UserList", "CodeList");
 
 function setDashboardSessionVariables(){
 	//helps with managing the db & table we are on and looking at.
@@ -33,7 +32,7 @@ function printAdditionalDebugInfo(){
 	$table = $_SESSION["currentdbtable"];
 	$action = $_GET["action"];
 	$item = $_GET["item"];
-	$election = $_GET["currentlyelection"];
+	$election = $_GET["currentelection"];
 
 	//echo "<div class='debug_info'>";
 	echo "<div class='w3-countainer w3-blue-grey'>";
@@ -45,9 +44,26 @@ function printAdditionalDebugInfo(){
 }
 
 function printDashboardOptions($currentAction){
-	global $actionList;
+	//global $actionList;
+	$actionList = array("ElectionList", "ManageElections", "ChangePassword", "Logout");
+	$adminActions = array("UserList", "CodeList", "CreateElection", "GenerateRegistrationCode");
 	//echo "<div class='dashboard_menu'>";
+
+	if(bounceAdmin()){ //print a bar of admin functions
+		echo "<div class='w3-bar w3-blue-grey' style='width:100%'>";
+		echo "<div class='w3-bar-item'>Admin Actions:</div>";
+		foreach($adminActions as $action){
+			if($currentAction==$action){
+				echo "<b><a href='?action=".$action."' class='w3-bar-item w3-button w3-grey w3-mobile'>[".$action."]</a></b>";}
+			else{
+				echo "<a href='?action=".$action."' class='w3-bar-item w3-button w3-mobile'>[".$action."]</a>";}
+		}
+//		echo "<b><a href='?action=".$action."' class='w3-bar-item w3-button w3-grey w3-mobile'>[".$action."]</a></b>";}
+//		echo "
+	}
+	echo "</div>";
 	echo "<div class='w3-bar w3-light-grey' style='width:100%'>";
+	echo "<div class='w3-bar-item'>Actions:</div>";
 	//echo "<ul class='w3-ul w3-center w3-hoverable' style='width:50%'>";
 	foreach($actionList as $action){
 		if($currentAction==$action){
@@ -77,9 +93,12 @@ function handleAction($currentAction, $item){
 			//echo "Changing to new election db...";
 			changeElection($item);
 			break;
+		case "changetable":
+			changeTable($item);
+			break;
 		case "manageelections":
-			//echo "Manage Elections code<br>";
-			printListOfElections($item);
+			echo "Manage Elections code<br>";
+			//printElectionBar($item);
 //			printManageElectionMenu(); //print info for managing the different elections in the db
 			break;
 		case "generateregistrationcode":
@@ -90,7 +109,7 @@ function handleAction($currentAction, $item){
 		case "electionlist":
 			printElectionList();
 			break;
-		case "userlist":
+ 		case "userlist":
 			printUserList();
 			break;
 		case "codelist":
@@ -354,13 +373,15 @@ function printManageElectionMenu(){
 	//other stuff
 }
 
-function printListOfElections($item){
+function printElectionsBar($item){
 	global $elections;
 	global $mysqli;
 	global $polinfo_db;
 
-	echo "<div class='election_list_menu'>";
-
+	$currentElection = $_SESSION["currentelection"];
+	//echo "<div class='election_list_menu'>";
+	echo "<div class='w3-bar w3-light-grey' style='width:100%'>";
+	echo "<div class='w3-bar-item'>Elections:</div>";
 	$q = "SELECT * FROM ".$elections.";";
 	if(!mysqli_select_db($mysqli, $polinfo_db)){
 		die("PrintListofElections: error switching to db ".$polinfo_db." because: ".mysqli_error($mysqli));
@@ -374,34 +395,56 @@ function printListOfElections($item){
 	}
 	while($row = mysqli_fetch_array($result)){
 		$d = $row['db_name'];
+		$nickname = $row['nickname'];
 		if(!$d){
 			echo "oddly there is no db_name....<br>";}
-		else if($d == $item){
-			echo "<b>[".$d."]</b><br>"; }
+//		else if($d == $currentElection){
+//			echo "<b><a href='?action=changeelection&item=".$d."' class='w3-bar-item w3-button w3-grey w3-mobile'>[".$nickname."]</a></b>";}
+			//echo "<div class='w3-grey'><b>[".$d."]</b><br>"; }
 		else{
-			echo "<a href='?action=changeelection&item=".$d."'>[".$d."]</a>";
+			echo "<a href='?action=changeelection&item=".$d."' class='w3-bar-item w3-button w3-mobile'>[".$nickname."]</a>";
+			//echo "<a href='?action=changeelection&item=".$d."'>[".$d."]</a>";
 		}
 	}
 	echo "</div>";
+	//tables bar
+
+	echo "<div class='w3-bar w3-light-grey' style='width:100%'>";
+	echo "<div class='w3-bar-item'>Election Tables:</div>";
+	echo "<a href='?action=changetable&item=candidates' class='w3-bar-item w3-button w3-mobile'>[candidates]</a>";
+	echo "<a href='?action=changetable&item=contests' class='w3-bar-item w3-button w3-mobile'>[contests]</a>";
+	echo "</div>";
+
 }
 function changeElection($item){
 	global $mysqli;
 	global $polinfo_db;
 	global $elections;
-	$new_election = mysqli_real_escape_string($item);
 
+	$new_election = mysqli_real_escape_string($mysqli, $item);
 	if(!isValueInTable($new_election, "db_name", $elections, $polinfo_db)){
 		echo "I'm not sure that <b>".$new_election."</b> has been created yet... <br>";
 	}
 	else{
 		setCurrentElection($new_election);
 
-		if(!mysqli_select_db($mysqli, $election)){
+		if(!mysqli_select_db($mysqli, $new_election)){
 			die("ChangeElection: error switching to db ".$polinfo_db." because: ".mysqli_error($mysqli));
 		}
-
-		echo "looks like everything worked...!<br>";
+		$_SESSION["currentdb"] = $new_election;
+		//echo "looks like everything worked...!<br>";
 	}
+
+}
+function changeTable($item){
+	global $mysqli, $polinfo_db;
+	$new_table = mysqli_real_escape_string($mysqli, $item);
+	$db = $_SESSION["currentdb"];
+	$_SESSION["currentdbtable"] = $item;
+	$fields = buildFields($db, $item);
+	echo "<center>";
+	printDBTable($db, $item, $fields);
+	echo "</center>";
 
 }
 function buildNewElectionDB($newdbname){
