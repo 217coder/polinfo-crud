@@ -33,7 +33,7 @@ session_start();?>
 <?php
 bounce(); //confirm if logged in
 echo "<div class='w3-countainer w3-amber'>";
-echo "<h1>Welcome to the Dashboard</h1>";
+echo "<h1>Welcome to the Dashboard!!!</h1>";
 echo "</div>";
 $a = $_GET["action"];
 $item = $_GET["item"];

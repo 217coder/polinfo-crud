@@ -49,6 +49,7 @@ function printDashboardOptions($currentAction){
 	$adminActions = array("UserList", "CodeList", "CreateElection", "GenerateRegistrationCode");
 	//echo "<div class='dashboard_menu'>";
 
+	echo "<div class='w3-countainer w3-centered'>";
 	if(bounceAdmin()){ //print a bar of admin functions
 		echo "<div class='w3-bar w3-blue-grey' style='width:100%'>";
 		echo "<div class='w3-bar-item'>Admin Actions:</div>";
@@ -72,6 +73,7 @@ function printDashboardOptions($currentAction){
 			echo "<a href='?action=".$action."' class='w3-bar-item w3-button w3-mobile'>[".$action."]</a>";}
 	}
 	echo "</div>";
+	echo "</div>"; //for cenetering/countainer div
 
 }
 
