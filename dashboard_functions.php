@@ -47,7 +47,7 @@ function printAdditionalDebugInfo(){
 
 function printDashboardOptions($currentAction){
 	//global $actionList;
-	$actionList = array("ElectionList", "ManageElections", "ChangePassword", "Logout");
+	$actionList = array("UploadCSV","ElectionList", "ManageElections", "ChangePassword", "Logout");
 	$adminActions = array("UserList", "CodeList", "CreateElection", "GenerateRegistrationCode", "ChangeDefaultElection");
 	//echo "<div class='dashboard_menu'>";
 
@@ -83,48 +83,6 @@ function handleAction($currentAction, $item){
 	$currentAction = strtolower($currentAction);
 
 	switch($currentAction){
-		case "logout":
-			logout();
-			break;
-		case "changepassword":
-			updatePasswordForm();
-			break;
-		case "createelection":
-			//echo "Create Election code";
-			prepCreateElectionForm(); //prep the variables for the new election db
-			break;
-		case "changeelection":
-			//echo "Changing to new election db...";
-			changeElection($item);
-			break;
-		case "changetable":
-			changeTable($item);
-			break;
-		case "manageelections":
-			echo "Manage Elections code<br>";
-			//printElectionBar($item);
-//			printManageElectionMenu(); //print info for managing the different elections in the db
-			break;
-		case "generateregistrationcode":
-			$c = generateCode();
-			echo "Generated code: ".$c."<br>";
-			echo "use it wisely<br>";
-			break;
-		case "createdefaultuser":
-			createDefaultElectionUser();
-			break;
-		case "changedefaultelection":
-			updateDefaultElection($item);
-			break;
-		case "electionlist":
-			printElectionList();
-			break;
- 		case "userlist":
-			printUserList();
-			break;
-		case "codelist":
-			printCodeList();
-			break;
 		case "edit":
 			//echo "print an edit form for the item selected...<br>";
 			prepEditForm($item); //prep the variables for the edit form, and then call it.
@@ -144,6 +102,51 @@ function handleAction($currentAction, $item){
 		case "confirmdelete":
 			//echo "Print txt to confirm delete...<br>";
 			deleteForSure($item);
+			break;
+		case "logout":
+			logout();
+			break;
+		case "changepassword":
+			updatePasswordForm();
+			break;
+		case "changetable":
+			changeTable($item);
+			break;
+		case "createelection":
+			//echo "Create Election code";
+			prepCreateElectionForm(); //prep the variables for the new election db
+			break;
+		case "changeelection":
+			//echo "Changing to new election db...";
+			changeElection($item);
+			break;
+		case "manageelections":
+			echo "Manage Elections code<br>";
+			//printElectionBar($item);
+//			printManageElectionMenu(); //print info for managing the different elections in the db
+			break;
+		case "generateregistrationcode":
+			$c = generateCode();
+			echo "Generated code: ".$c."<br>";
+			echo "use it wisely<br>";
+			break;
+		case "uploadcsv":
+			printUploadCSVForm();
+			break;
+		case "createdefaultuser":
+			createDefaultElectionUser();
+			break;
+		case "changedefaultelection":
+			updateDefaultElection($item);
+			break;
+		case "electionlist":
+			printElectionList();
+			break;
+ 		case "userlist":
+			printUserList();
+			break;
+		case "codelist":
+			printCodeList();
 			break;
 		default:
 			echo "Please make a selection...<br>";
@@ -456,6 +459,14 @@ function changeTable($item){
 	printDBTable($db, $item, $fields);
 	echo "</center>";
 
+}
+function printUploadCSVForm(){
+	$tip = "Your CSV file must be formatted specifically.";
+	echo "<form action='?a=uploadcomplete' method='post' class='w3-countainer w3-margin w3-centered w3-center' name='upload_csv' enctype='multipart/form-data'>";
+        //echo "<label for='filebutton'>Select CSV File</label>";
+        echo "<input type='file' name='fileToUpload' id='fileToUpload' text='Select CSV' class='w3-button'><br>";
+        echo "<input type='submit' value='Upload CSV' name='submit' class='w3-button w3-red'>";
+        echo "</form>";
 }
 function updateDefaultElection($item){
 	global $users;
