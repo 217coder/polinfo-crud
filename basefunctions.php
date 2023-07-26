@@ -27,7 +27,11 @@ $tooltip_varchar = "'<b>varchar</b>' Can be a string of characters, like a word 
 $tooltip_date = "'<b>date</b>' is formatted YYYY-MM-DD";
 $tooltip_int = "'<b>int</b>' is any number. No spaces or other characters.";
 $tooltip_text = "'<b>text</b>' can be a large block of text/words, typically larger than 'varchar'";
-$tooltip_array = array($tooltip_varchar, $tooltip_date, $tooltip_int, $tooltip_text);
+$tooltip_array['varchar']=$tooltip_varchar;
+$tooltip_array['date']=$tooltip_date;
+$tooltip_array['int']=$tooltip_int;
+$tooltip_array['text']=$tooltip_text;
+//$tooltip_array = array($tooltip_varchar, $tooltip_date, $tooltip_int, $tooltip_text);
 
 $mysqli = new mysqli($dbhost, $dbuser, $dbpass); //create sql connection
 if ($mysqli->connect_error) {
@@ -292,6 +296,61 @@ function printEditForm($dbname, $table, $id){
 }
 //form for adding a new entry
 function printEntryForm($db, $table, $fields, $superFields){
+	global $tooltip_array;
+        global $defaultLevel, $defaultCountywide, $defaultSeats;
+        global $candidateDefaultFields;
+
+	//echo "<div class='new_entry_form'>";
+	echo "<div class='w3-container w3-light-blue w3-center w3-padding' style='width:70%'>";
+        echo "<h2 class='w3-center w3-amber'>Start of New Entry Form</h2>";
+	echo "<p class='w3-small'>Hover over <u>Input Type</u> for tips on what info to enter</p>";
+	//echo "<center>";
+	echo "<form action='?action=addnew&item=".$table."' method='post' class='w3-container'>";
+	//echo "<tr><td class='w3-right-align'>Confirmation Code</td><td><input class='w3-input' type='text'></td><td>varchar</td></tr>";
+        $c = count($superFields); //print all the $fields
+        for($i=0;$i<$c;$i++){
+                $v = strtolower($superFields[$i]['COLUMN_NAME']);
+                $datatype = strtolower($superFields[$i]['DATA_TYPE']);
+                /////////////////////////////////////////////////
+                ///////----really ugly manual defaults-----//////
+                /////////////////////////////////////////////////
+                if($v!="id"){
+                        //echo "<label>Field: <b>".$v."</b> | Input Type: <b>".$datatype."</b></label>";
+                        //echo "<p class='w3-tooltip'>Input Type: <span style='position:absolute;left:0;bottom:18px' class='w3-text w3-tag'>test info...</span>".$datatype." and stuff</p>";
+			echo "<label class='w3-tooltip'>";
+			echo "Field: <b>".$v."</b> | Input Type: ";
+			echo "<span style='position:absolute;left:20px;bottom:18px' class='w3-text w3-tag'>".$tooltip_array[$datatype]."</span>";
+			//echo "<span style='position:absolute;left:10px;bottom:18px' class='w3-text w3-tag'>test info.......".$v."</span>";
+			echo "<b><u>".$datatype."</u></b></label>";
+			echo "<input class='w3-input' name='".$v."' type='text' value='";
+                        if($v=="level"){
+                                echo $defaultLevel;
+                        }
+                        else if($v=="countywide"){
+                                echo $defaultCountywide;
+                        }
+                        else if($v=="seats_available"){
+                                echo $defaultSeats;
+                        }
+			echo "'>";
+                }
+        }
+        //finish form
+	echo "<input class='w3-button w3-red w3-centered' type='submit' value='Add!'>";
+	echo "</form>";
+	echo "</div>";
+        //echo "<div class='datatype_tips'>";
+	//echo "<div class='w3-container w3-border w3-centered'><h2>Datatype Tips:</h2>";
+	//foreach($tooltip_array as $tooltip){
+	//	echo "<p>".$tooltip."</p>";
+	//}
+	//echo "</div>";
+	//echo "<br>";
+	//echo "</center>";
+
+}
+//form for adding a new entry
+function OLDprintEntryForm($db, $table, $fields, $superFields){
 	global $tooltip_array;
         global $defaultLevel, $defaultCountywide, $defaultSeats;
         global $candidateDefaultFields;
