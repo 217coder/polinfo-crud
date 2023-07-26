@@ -17,6 +17,8 @@
 //########################################################################################
 
 include("basefunctions.php");
+$defaultuser = "default_election";
+
 
 function setDashboardSessionVariables(){
 	//helps with managing the db & table we are on and looking at.
@@ -46,7 +48,7 @@ function printAdditionalDebugInfo(){
 function printDashboardOptions($currentAction){
 	//global $actionList;
 	$actionList = array("ElectionList", "ManageElections", "ChangePassword", "Logout");
-	$adminActions = array("UserList", "CodeList", "CreateElection", "GenerateRegistrationCode");
+	$adminActions = array("UserList", "CodeList", "CreateElection", "GenerateRegistrationCode", "ChangeDefaultElection");
 	//echo "<div class='dashboard_menu'>";
 
 	echo "<div class='w3-countainer w3-centered'>";
@@ -107,6 +109,12 @@ function handleAction($currentAction, $item){
 			$c = generateCode();
 			echo "Generated code: ".$c."<br>";
 			echo "use it wisely<br>";
+			break;
+		case "createdefaultuser":
+			createDefaultElectionUser();
+			break;
+		case "changedefaultelection":
+			updateDefaultElection($item);
 			break;
 		case "electionlist":
 			printElectionList();
@@ -447,6 +455,88 @@ function changeTable($item){
 	echo "<center>";
 	printDBTable($db, $item, $fields);
 	echo "</center>";
+
+}
+function updateDefaultElection($item){
+	global $users;
+	global $polinfo_db;
+	global $defaultuser;
+
+	if(!isValueInTable($defaultuser, "username", $users, $polinfo_db)){
+		echo "<div class='w3-countainer w3-margin'><p>The default user <b>".$defaultuser."</b> does not exist in the <b>".$users."</b> db......<a href='?action=createdefaultuser'>Would you like to create it?</a></p></div>";
+		return false;
+	}
+
+	$defaultelection = fetchRow($defaultuser, "username", $users, $polinfo_db);
+	if(!$defaultelection['election']){
+		echo "test.......<br>";
+		echo "<div class='w3-countainer'><p>Default election exists in table, but is not yet set to an election, please choose one....</p></div>";
+		echo "list of elections, submit button<br>";
+	}
+	else{
+		echo "does not exist... <br>";
+	}
+
+	$electionList = pullListofElections($item);
+	foreach($electionList as $x => $value){
+		if($x == $defaultelection['election']){
+			echo "<b>x: ".$x." value: ".$value." </b><br>";}
+		else{
+			echo "x: ".$x." value: ".$value." <br>";}
+	}
+	echo "the end<br>";
+}
+function createDefaultElectionUser(){
+	global $mysqli;
+	global $users;
+	global $defaultuser;
+	global $polinfo_db;
+
+	bounceAdmin();
+	if(isValueInTable($defaultuser, "username", $users, $polinfo_db)){
+		echo "The <b>".$defaultuser." user already exists...<br>";
+	}
+	else{
+		//create
+		echo "some words...<br>";
+		$q = "INSERT INTO ".$users." (username, password, access_level) VALUES ('default_election', 'none', 0);";
+		if(!$mysqli->query($q)){
+			echo "q: ".$q." <br>";
+			echo "CreateDefaultElectionUser: had an error running query because ".mysqli_error($mysqli)."<br>";
+		}
+		else{
+			echo "<div class='w3-countainer w3-margin'><p>The default user <b>".$defaultuser."</b> has been created successfully!</p></div>";
+		}
+	}
+}
+function pullListofElections($item){
+	global $mysqli;
+	global $polinfo_db;
+	global $elections;
+
+	if(!mysqli_select_db($mysqli, $polinfo_db)){
+		echo "PullListofElections: failed to connect to new DB ".$polinfo_db." because of ".mysqli_error($mysqli)."<br>";
+		return false;
+	}
+	$q = "SELECT * FROM ".$elections.";";
+	$result = $mysqli->query($q);
+	if(!$result){
+		echo "q: ".$q." <br>";
+		echo "PullListofElections: failed to run query because of ".mysqli_error($mysqli)."<br>";
+		return false;
+	}
+	else if($result->num_rows<1){
+		echo "It looks like there are no elections in the <b>".$elections."</b> table, would you like to <a href='?action=createelection'>Create new Election?</a><br>";
+		return false;
+	}
+	$electionList = array();
+	while($row = mysqli_fetch_array($result)){
+		$name = $row['db_name'];
+		$nickname = $row['nickname'];
+		$electionList[$name] = $nickname; //db_name will be unique, nickname might not be, but perhaps should be
+		//array_push($electionList, $nickname);
+	}
+	return $electionList;
 
 }
 function buildNewElectionDB($newdbname){

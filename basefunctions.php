@@ -208,7 +208,7 @@ function buildFields($db, $table){
 }
 function printTableHead($tableFields, $admin){
         echo "<table class='w3-table w3-striped w3-centered'>";
-	echo "<tr>"; //begin printing html
+	echo "<tr class='w3-blue-grey'>"; //begin printing html
         echo "<th>Edit</th>";
 	if($admin){
 		echo "<th>Delete</th>";}

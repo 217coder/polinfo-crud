@@ -113,7 +113,7 @@ else{
 			if(!checkForTable($polinfo_db, $users)){
 				echo "creating users table...<br>";
 				$q = "CREATE TABLE ".$users."  (id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, username varchar(50) NOT NULL UNIQUE,
- password varchar(255) NOT NULL, access_level int(11) DEFAULT 1)";
+ password varchar(255) NOT NULL, access_level int(11) DEFAULT 1, election varchar(255) DEFAULT NULL)";
 				echo "q =".$q."... <br>";
 				if($mysqli->query($q)===TRUE){
 					echo "<b>table created successfully!!!</b><br>";
@@ -124,6 +124,13 @@ else{
 				echo "q =".$q."... <br>";
 				if($mysqli->query($q)===TRUE){
 					echo "<b>admin user created successfully!!!</b><br>";
+				} else{
+					echo "errrrrror creating admin user: ".mysqli_error($mysqli);}
+				echo "setting up default_election user for users table, which will be used to set the default election for guide.php.<br>";
+				$q = "INSERT INTO ".$users." (username, password, access_level) VALUES ('default_election', 'none', 0);";
+				echo "q =".$q."... <br>";
+				if($mysqli->query($q)===TRUE){
+					echo "<b>default_election user created successfully!!!</b><br>";
 				} else{
 					echo "errrrrror creating admin user: ".mysqli_error($mysqli);}
 			}
