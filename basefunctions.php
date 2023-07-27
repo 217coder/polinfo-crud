@@ -349,58 +349,6 @@ function printEntryForm($db, $table, $fields, $superFields){
 	//echo "</center>";
 
 }
-//form for adding a new entry
-function OLDprintEntryForm($db, $table, $fields, $superFields){
-	global $tooltip_array;
-        global $defaultLevel, $defaultCountywide, $defaultSeats;
-        global $candidateDefaultFields;
-
-	//echo "<div class='new_entry_form'>";
-	echo "<div class='w3-container w3-light-blue w3-center w3-padding' style='width:70%'>";
-        echo "<h2 class='w3-center w3-amber'>Start of New Entry Form</h2>";
-	//echo "<center>";
-	echo "<form action='?action=addnew&item=".$table."' method='post' class='w3-container'>";
-        echo "<table class='w3-table'>"; //start building entry form
-	echo "<tr class='w3-blue-grey'><th class='w3-right-align'>Column Name</th><th class='w3-center'>Input Data</th><th>Data Type</th></tr>";
-        //echo "<tr><td>Confirmation Code</td><td><textarea name='confirm_add' cols='80' rows='1'></textarea></td><td>varchar</td></tr>";
-        //echo "<tr><td>Confirmation Code</td><td><textarea name='confirm_add'></textarea></td><td>varchar</td></tr>";
-	echo "<tr><td class='w3-right-align'>Confirmation Code</td><td><input class='w3-input' type='text'></td><td>varchar</td></tr>";
-        $c = count($superFields); //print all the $fields
-        for($i=0;$i<$c;$i++){
-                $v = strtolower($superFields[$i]['COLUMN_NAME']);
-                $datatype = strtolower($superFields[$i]['DATA_TYPE']);
-                /////////////////////////////////////////////////
-                ///////----really ugly manual defaults-----//////
-                /////////////////////////////////////////////////
-                if($v!="id"){
-                        //echo '<tr><td>'.$v.'</td><td><textarea name="'.$v.'" cols="80" rows="1">';
-                        echo "<tr><td class='w3-right-align'>".$v."</td><td><input class='w3-input' name='".$v."' type='text' value='";
-                        if($v=="level"){
-                                echo $defaultLevel;
-                        }
-                        else if($v=="countywide"){
-                                echo $defaultCountywide;
-                        }
-                        else if($v=="seats_available"){
-                                echo $defaultSeats;
-                        }
-                        echo "'></td><td>".$datatype."</td></tr>";
-                }
-        }
-        //finish form
-        echo "<tr><td></td><td><input class='w3-button w3-red w3-cenetered' type='submit' value='Add!!!'></td><td></td></tr>";
-	echo "</table></form><br>";
-	echo "</div>";
-        //echo "<div class='datatype_tips'>";
-	echo "<div class='w3-container w3-border w3-centered'><h2>Datatype Tips:</h2>";
-	foreach($tooltip_array as $tooltip){
-		echo "<p>".$tooltip."</p>";
-	}
-	echo "</div>";
-	echo "<br>";
-	//echo "</center>";
-
-}
 //add entry (from form) into database // gets data from $_POST
 function addEntry($dbname, $table, $tableFields){
         global $mysqli; //pull in globals

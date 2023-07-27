@@ -32,8 +32,8 @@ session_start();?>
 <div class="center">
 <?php
 bounce(); //confirm if logged in
-echo "<div class='w3-countainer w3-amber'>";
-echo "<h1>Welcome to the Dashboard!!!</h1>";
+echo "<div class='w3-countainer w3-amber w3-padding'>";
+echo "<h1>Welcome to the Dashboard!</h1>";
 echo "</div>";
 $a = $_GET["action"];
 $item = $_GET["item"];
@@ -43,7 +43,7 @@ printElectionsBar($item);
 //echo "<u>Output & Debug info:</U><br>";
 handleAction($a, $item);
 printAdditionalDebugInfo();
-echo "<br>test footer";
+//echo "<br>test footer";
 ?>
 </div>
 </body>

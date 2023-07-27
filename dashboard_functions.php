@@ -34,7 +34,7 @@ function printAdditionalDebugInfo(){
 	$table = $_SESSION["currentdbtable"];
 	$action = $_GET["action"];
 	$item = $_GET["item"];
-	$election = $_GET["currentelection"];
+	$election = $_SESSION["currentelection"];
 
 	//echo "<div class='debug_info'>";
 	echo "<div class='w3-countainer w3-blue-grey'>";
@@ -132,6 +132,9 @@ function handleAction($currentAction, $item){
 			break;
 		case "uploadcsv":
 			printUploadCSVForm();
+			break;
+		case "processcsv":
+			processCSV($item);
 			break;
 		case "createdefaultuser":
 			createDefaultElectionUser();
@@ -445,6 +448,9 @@ function changeElection($item){
 			die("ChangeElection: error switching to db ".$polinfo_db." because: ".mysqli_error($mysqli));
 		}
 		$_SESSION["currentdb"] = $new_election;
+		echo "h: ".$_SESSION["currentelection"]." db: ".$_SESSION["currentdb"]." .whooooop.<br>";
+		$_SESSION["currentelection"] = $new_election;
+		echo "h: ".$_SESSION["currentelection"]." ...<br>";
 		//echo "looks like everything worked...!<br>";
 	}
 
@@ -462,11 +468,58 @@ function changeTable($item){
 }
 function printUploadCSVForm(){
 	$tip = "Your CSV file must be formatted specifically.";
+
+	echo "<div class='w3-countainer w3-margin'><p>For an example of the format the CSV <b>must</b> be in uploaded in order to be processed: <a href='example-polinfo.csv'>Click Here</a></p></div>";
 	echo "<form action='?a=uploadcomplete' method='post' class='w3-countainer w3-margin w3-centered w3-center' name='upload_csv' enctype='multipart/form-data'>";
         //echo "<label for='filebutton'>Select CSV File</label>";
         echo "<input type='file' name='fileToUpload' id='fileToUpload' text='Select CSV' class='w3-button'><br>";
         echo "<input type='submit' value='Upload CSV' name='submit' class='w3-button w3-red'>";
         echo "</form>";
+
+}
+function processCSV($item){
+	global $mysqli;
+	global $candidates;
+
+	$electiondb = $_SESSION["currentelection"];
+	if(!$electiondb){
+		echo "ProcessCSV: No electiondb looks to be selected...<br>";
+		return false;
+	}
+
+	if(!mysqli_select_db($electiondb)){
+		echo "ProcessCSV: there was an error switching to ".$electiondb." because ".mysqli_error($mysqli)."<br>";
+		return false;
+	}
+
+	if(isset($_POST["submit"])){
+		$filename = $_FILES["fileToUpload"]["tmp_name"];
+		if($_FILES["fileToUpload"]["size"]>0){
+			$file = fopen($filename, "r");
+			//test first row for proper header setup
+			$getData = fgetcsv($file, 10000, ",");
+			if($getData[0] !== "id"){
+				echo "problem with csv... first column is not 'id' it is '".$getData[0]."'...<br>";
+				return false;
+			}
+			while(($getData = fgetcsv($file, 10000, ",")) !== FALSE){
+				$name = mysqli_real_escape_string($mysqli, $getData[0]);
+				$q = "UPDATE ".$candidates." ";
+				$q = $q."SET contest_key='".getData[1]."'";
+				//$sql = $sql."SET phone='".$getData[1]."',email='".$getData[2]."',website='".$getData[3];
+				$q = $q." WHERE ID='".$getData[0]."';";
+				if(!$mysqli->query($q)){
+					echo "q: ".$q." <br>";
+					echo "ProcessCSV: there was an error with the query... ".mysqli_error($mysqli)."<br>";
+					return false;
+				}
+			}//end of while loop
+			fclose($file);
+		}
+	}
+	echo "<b>CSV uploaded & processed successfully!</b><br>";
+	return true;
+
 }
 function updateDefaultElection($item){
 	global $users;
@@ -479,7 +532,7 @@ function updateDefaultElection($item){
 	}
 
 	$defaultelection = fetchRow($defaultuser, "username", $users, $polinfo_db);
-	if(!$defaultelection['election']){
+	if(!$defaultelection['election_db']){
 		echo "test.......<br>";
 		echo "<div class='w3-countainer'><p>Default election exists in table, but is not yet set to an election, please choose one....</p></div>";
 		echo "list of elections, submit button<br>";
