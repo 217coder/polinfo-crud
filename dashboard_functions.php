@@ -37,11 +37,11 @@ function printAdditionalDebugInfo(){
 	$election = $_SESSION["currentelection"];
 
 	//echo "<div class='debug_info'>";
-	echo "<div class='w3-countainer w3-blue-grey'>";
+	echo "<div class='w3-countainer w3-blue-grey w3-padding'>";
 	echo "<h2><U>Additional Debug Info:</u></h2>";
-	echo "<p>db: <b>".$db."</b> dbTable: <b>".$table."</b><br>";
-	echo "action: <b>".$action."</b> item: <b>".$item."</b><br>";
-	echo "current_election: <b>".$election."</b></p>";
+	echo "<p>current_election: <b>".$election."</b><br>";
+	echo "db: <b>".$db."</b> dbTable: <b>".$table."</b><br>";
+	echo "action: <b>".$action."</b> item: <b>".$item."</b></p>";
 	echo "</div>";
 }
 
@@ -396,7 +396,7 @@ function printElectionsBar($item){
 
 	$currentElection = $_SESSION["currentelection"];
 	//echo "<div class='election_list_menu'>";
-	echo "<div class='w3-bar w3-light-grey' style='width:100%'>";
+	echo "<div class='w3-bar w3-2020-faded-denim' style='width:100%'>";
 	echo "<div class='w3-bar-item'>Elections:</div>";
 	$q = "SELECT * FROM ".$elections.";";
 	if(!mysqli_select_db($mysqli, $polinfo_db)){
@@ -415,7 +415,7 @@ function printElectionsBar($item){
 		if(!$d){
 			echo "oddly there is no db_name....<br>";}
 //		else if($d == $currentElection){
-//			echo "<b><a href='?action=changeelection&item=".$d."' class='w3-bar-item w3-button w3-grey w3-mobile'>[".$nickname."]</a></b>";}
+//			echo "<b><a href='?action=changeelection&item=".$d."' class='w3-bar-item w3-button w3-light-grey w3-mobile'>[".$nickname."]</a></b>";}
 			//echo "<div class='w3-grey'><b>[".$d."]</b><br>"; }
 		else{
 			echo "<a href='?action=changeelection&item=".$d."' class='w3-bar-item w3-button w3-mobile'>[".$nickname."]</a>";
@@ -448,9 +448,6 @@ function changeElection($item){
 			die("ChangeElection: error switching to db ".$polinfo_db." because: ".mysqli_error($mysqli));
 		}
 		$_SESSION["currentdb"] = $new_election;
-		echo "h: ".$_SESSION["currentelection"]." db: ".$_SESSION["currentdb"]." .whooooop.<br>";
-		$_SESSION["currentelection"] = $new_election;
-		echo "h: ".$_SESSION["currentelection"]." ...<br>";
 		//echo "looks like everything worked...!<br>";
 	}
 
